@@ -1,0 +1,48 @@
+name: Discord PR Notifications
+
+on:
+  pull_request:
+    types: [opened, closed, reopened]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  notify_discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine Discord message
+        id: set_message
+        shell: bash
+        run: |
+          EVENT_NAME="${{ github.event_name }}"
+          MESSAGE=""
+          
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            ACTION="${{ github.event.action }}"
+            TITLE="${{ github.event.pull_request.title }}"
+            if [ "$ACTION" = "opened" ]; then
+              MESSAGE=":sparkles: 새로운 Pull Request가 생성되었습니다!\n제목: **$TITLE**\nURL: ${{ github.event.pull_request.html_url }}"
+            elif [ "$ACTION" = "reopened" ]; then
+              MESSAGE=":repeat: Pull Request가 다시 열렸습니다!\n제목: **$TITLE**\nURL: ${{ github.event.pull_request.html_url }}"
+            elif [ "$ACTION" = "closed" ]; then
+              if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+                MESSAGE=":white_check_mark: Pull Request가 머지되었습니다!\n제목: **$TITLE**\nURL: ${{ github.event.pull_request.html_url }}"
+              else
+                MESSAGE=":x: Pull Request가 닫혔습니다.\n제목: **$TITLE**\nURL: ${{ github.event.pull_request.html_url }}"
+              fi
+            fi
+          elif [ "$EVENT_NAME" = "pull_request_review" ]; then
+            REVIEWER="${{ github.event.review.user.login }}"
+            COMMENT="${{ github.event.review.body }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            MESSAGE=":speech_balloon: **$REVIEWER**님이 리뷰 코멘트를 남겼습니다!\nPull Request: **$PR_TITLE**\n코멘트: $COMMENT\nURL: $PR_URL"
+          fi
+          
+          echo "::set-output name=discord_message::$MESSAGE"
+          
+      - name: Send notification to Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d "{\"content\": \"${{ steps.set_message.outputs.discord_message }}\"}" \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
