@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,20 +24,20 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class NewsService {
 
     private final NewsRepository newsRepository;
-    private static final Logger logger = LoggerFactory.getLogger(NewsService.class);
 
     //@Scheduled(cron = "0 0 6 * * ?") // 매일 오전 6시에 실행
-    @Scheduled(cron = "0 * * * * ?") // 매일 오전 6시에 실행
+    //@Scheduled(cron = "0 * * * * ?") // 매 0초 마다 실행
     public void executePythonScript() {
-        logger.info("뉴스 크롤링 스케줄러 실행 시작");
+        log.info("뉴스 크롤링 스케줄러 실행 시작");
         try {
             // 파이썬 스크립트 파일 추출
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("scripts/news.py");
             if (inputStream == null) {
-                logger.error("스크립트 파일을 찾을 수 없습니다");
+                log.error("스크립트 파일을 찾을 수 없습니다");
                 return;
             }
 
@@ -44,13 +45,13 @@ public class NewsService {
             Path tempFile = Files.createTempFile("news_script", ".py");
             Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
             inputStream.close();
-            logger.debug("임시 파일 생성: {}", tempFile);
+            log.debug("임시 파일 생성: {}", tempFile);
 
             // 스크립트 실행 및 결과 수집
             ProcessBuilder processBuilder = new ProcessBuilder("python3", tempFile.toString());
             processBuilder.redirectErrorStream(false); // 에러 스트림과 출력 스트림 분리
             Process process = processBuilder.start();
-            logger.debug("파이썬 프로세스 시작됨");
+            log.debug("파이썬 프로세스 시작됨");
 
             // 표준 출력 읽기
             BufferedReader reader = new BufferedReader(
@@ -70,30 +71,30 @@ public class NewsService {
             }
 
             if (errorOutput.length() > 0) {
-                logger.warn("파이썬 스크립트 오류 출력: {}", errorOutput);
+                log.warn("파이썬 스크립트 오류 출력: {}", errorOutput);
             }
 
             // 결과 저장
             int exitCode = process.waitFor();
-            logger.debug("파이썬 프로세스 종료 코드: {}", exitCode);
+            log.debug("파이썬 프로세스 종료 코드: {}", exitCode);
 
             if (exitCode == 0 && output.length() > 0) {
                 String jsonData = output.toString().trim();
-                logger.debug("파싱할 JSON 데이터(일부): {}...",
+                log.debug("파싱할 JSON 데이터(일부): {}...",
                         jsonData.substring(0, Math.min(100, jsonData.length())));
                 saveNewsData(jsonData);
             } else {
-                logger.error("파이썬 스크립트에서 유효한 출력이 없거나 스크립트 실행 실패");
+                log.error("파이썬 스크립트에서 유효한 출력이 없거나 스크립트 실행 실패");
             }
 
             // 임시 파일 삭제
             Files.deleteIfExists(tempFile);
-            logger.debug("임시 파일 삭제됨");
+            log.debug("임시 파일 삭제됨");
 
         } catch (Exception e) {
-            logger.error("파이썬 스크립트 실행 중 오류 발생", e);
+            log.error("파이썬 스크립트 실행 중 오류 발생", e);
         }
-        logger.info("뉴스 크롤링 스케줄러 실행 완료");
+        log.info("뉴스 크롤링 스케줄러 실행 완료");
     }
 
     @Transactional
@@ -105,19 +106,31 @@ public class NewsService {
             List<News> newsItems = objectMapper.readValue(jsonData,
                     new TypeReference<List<News>>() {});
 
-            logger.info("뉴스 항목 {}개 파싱 성공", newsItems.size());
+            log.info("뉴스 항목 {}개 파싱 성공", newsItems.size());
 
             // 기존 데이터 모두 삭제
             newsRepository.deleteAll();
-            logger.info("기존 뉴스 데이터 모두 삭제 완료");
+            log.info("기존 뉴스 데이터 모두 삭제 완료");
 
             // 새 데이터 저장
             List<News> savedItems = newsRepository.saveAll(newsItems);
-            logger.info("뉴스 항목 {}개 저장 성공", savedItems.size());
+            log.info("뉴스 항목 {}개 저장 성공", savedItems.size());
 
         } catch (Exception e) {
-            logger.error("뉴스 데이터 파싱 또는 저장 중 오류 발생", e);
+            log.error("뉴스 데이터 파싱 또는 저장 중 오류 발생", e);
             throw new RuntimeException("뉴스 데이터 저장 실패", e);
         }
+    }
+
+    public List<NewsResponse> read() {
+        return newsRepository.findAll()
+                .stream()
+                .map(news -> new NewsResponse(
+                        news.getTitle(),
+                        news.getLink(),
+                        news.getImageUrl()
+                ))
+                .toList();
+
     }
 }
