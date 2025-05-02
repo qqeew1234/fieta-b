@@ -1,4 +1,4 @@
-package EtfRecommendService.user;
+package EtfRecommendService.user.exception;
 
 
 import org.springframework.http.HttpStatus;

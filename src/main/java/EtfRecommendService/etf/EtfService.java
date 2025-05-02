@@ -67,7 +67,7 @@ public class EtfService {
     //회원 맞는지 확인 - 이미 구독된 종목인지 확인 - 구독
     @Transactional
     public SubscribeResponse subscribe(String memberLoginId, Long etfId) {
-        User user = userRepository.findByLoginId(memberLoginId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
 
         Etf etf = etfRepository.findById(etfId)
                 .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
@@ -95,7 +95,7 @@ public class EtfService {
 
 //    @Transactional(readOnly = true)
     public SubscribeListResponse subscribeReadAll(Pageable pageable, String memberLoginId) {
-        User user = userRepository.findByLoginId(memberLoginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
 
         Page<Subscribe> subscribePage = subscribeRepository.findByUser(user, pageable);
@@ -120,7 +120,7 @@ public class EtfService {
     //로그인 확인 - 취소하려는 etfid가 구독이 돼있던건지 확인 후 구독 취소
     @Transactional
     public SubscribeDeleteResponse unsubscribe(String memberLoginId, Long etfId) {
-        User user = userRepository.findByLoginId(memberLoginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
 
         //유저가 해당 etf 구독하고 있는지 확인

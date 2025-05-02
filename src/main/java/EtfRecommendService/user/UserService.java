@@ -2,11 +2,17 @@ package EtfRecommendService.user;
 
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.dto.*;
+import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
+
+import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
+
 
 @RequiredArgsConstructor
 @Service
@@ -14,10 +20,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final UserQueryRepository userQueryRepository;
 
     public User getByLoginId(String loginId) {
-        return userRepository.findByLoginId(loginId).orElseThrow(
-                () -> new NoSuchElementException("회원을 찾을 수 없습니다."));
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
+                () -> new UserMismatchException(USER_MISMATCH));
     }
 
     public UserResponse create(CreateUserRequest userRequest) {
@@ -40,18 +47,18 @@ public class UserService {
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
 
-        if (loginRequest.password().isSamePassword(user.getPassword())) {
-            return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
+        if (!user.isSamePassword(loginRequest.password())) {
+            throw new UserMismatchException(USER_MISMATCH);
         }
 
-        throw new PasswordMismatchException("비밀번호가 다릅니다.");
+        return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
     }
 
     @Transactional
-    public UserUpdateResponse profileUpdate(String loginId, UserUpdateRequest updateRequest) {
+    public UserUpdateResponse UpdateProfile(String loginId, UserUpdateRequest updateRequest) {
         User user = getByLoginId(loginId);
 
-        user.profileUpdate(
+        user.updateProfile(
                 updateRequest.nickName(),
                 updateRequest.isLikePrivate());
 
@@ -63,49 +70,39 @@ public class UserService {
     }
 
     @Transactional
-    public UserDeleteResponse delete(String loginId) {
+    public void delete(String loginId) {
         User user = getByLoginId(loginId);
 
-        return new UserDeleteResponse(user.getId(), user.getIsDeleted());
+        user.deleteUser();
     }
 
     @Transactional
-    public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
+    public UserPasswordResponse updatePassword(String loginId, UserPasswordRequest passwordRequest) {
         User user = getByLoginId(loginId);
 
-        if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
-            throw new RuntimeException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
-        }
-
-        // 유저의 비밀번호와 입력받은 비밀번호가 같지않으면 예외처리
-        if (!user.isSamePassword(passwordRequest.existingPassword())) {
-            throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
-        }
-
-        // 유저의 비밀번호와 입력받은 새 비밀번호가 같으면 예외처리
-        if (user.isSamePassword(passwordRequest.confirmNewPassword())) {
-            throw new RuntimeException("변경할 비밀번호가 같습니다.");
-        }
-
-        user.passwordUpdate(passwordRequest.newPassword());
-
-        userRepository.save(user);
+        user.updatePassword(
+                passwordRequest.existingPassword(),
+                passwordRequest.newPassword());
 
         return new UserPasswordResponse(user.getId());
     }
 
-    public MypageResponse findByUser(String loginId, Long userId) {
+    public UserPageResponse findByUser(String loginId, Long userId, Pageable pageable) {
         getByLoginId(loginId);
 
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new NoSuchElementException("존재하지 않는 유저, id : " + userId));
+        userRepository.findById(userId).orElseThrow(
+                () -> new NoSuchElementException("존재하지 않는 회원입니다."));
 
-        return new MypageResponse(
-                user.getId(),
-                user.getLoginId(),
-                user.getNickName(),
-                user.getImageUrl(),
-                user.getIsLikePrivate());
+        List<UserCommentResponse> list = userQueryRepository.findUserComment(userId, pageable);
+
+        long totalCount = userQueryRepository.countUserComments(userId);
+
+        return new UserPageResponse(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                totalCount,
+                (totalCount + pageable.getPageSize() - 1) / pageable.getPageSize(),
+                list);
     }
 
 

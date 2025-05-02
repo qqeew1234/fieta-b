@@ -1,4 +1,4 @@
-package Etf;
+package EtfRecommendService;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
