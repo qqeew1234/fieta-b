@@ -1,5 +1,6 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
@@ -7,10 +8,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
 
 
@@ -20,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final S3Service s3Service;
     private final UserQueryRepository userQueryRepository;
 
     public User getByLoginId(String loginId) {
@@ -98,12 +101,28 @@ public class UserService {
         long totalCount = userQueryRepository.countUserComments(userId);
 
         return new UserPageResponse(
-                pageable.getPageNumber(),
+                pageable.getPageNumber() + 1,
                 pageable.getPageSize(),
                 totalCount,
                 (totalCount + pageable.getPageSize() - 1) / pageable.getPageSize(),
                 list);
     }
 
+    @Transactional
+    public UserProfileResponse imageUpdate(String loginId, MultipartFile file) throws IOException {
+        User user = getByLoginId(loginId);
+
+        String existingImageUrl = user.getImageUrl();
+
+        if (existingImageUrl != null && !existingImageUrl.isEmpty()) {
+            s3Service.deleteFile(existingImageUrl);
+        }
+
+        String newImageUrl = s3Service.uploadFile(file);
+
+        user.updateProfileImg(newImageUrl);
+
+        return new UserProfileResponse(user.getId(), user.getImageUrl());
+    }
 
 }

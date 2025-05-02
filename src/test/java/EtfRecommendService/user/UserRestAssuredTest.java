@@ -43,7 +43,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200);
+                .statusCode(201);
     }
 
     @Test
@@ -58,7 +58,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -86,7 +86,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -114,7 +114,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -156,7 +156,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -195,7 +195,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -217,7 +217,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest(password,newPassword,newPassword))
                 .when()
-                .post("/api/v1/users/me/password")
+                .patch("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
@@ -238,7 +238,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -260,7 +260,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest(noPassword,newPassword,confirmPassword))
                 .when()
-                .post("/api/v1/users/me/password")
+                .patch("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(401)
                 .extract();
@@ -279,7 +279,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -301,7 +301,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest(password,newPassword,confirmPassword))
                 .when()
-                .post("/api/v1/users/me/password")
+                .patch("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(401)
                 .extract();
@@ -318,7 +318,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -340,7 +340,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest(password,password,password))
                 .when()
-                .post("/api/v1/users/me/password")
+                .patch("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(500)
                 .extract();
@@ -357,7 +357,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
@@ -379,7 +379,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest(password,null,null))
                 .when()
-                .post("/api/v1/users/me/password")
+                .patch("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(500)
                 .extract();

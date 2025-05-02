@@ -26,7 +26,8 @@ public class UserQueryRepository {
                 .select(Projections.constructor(UserCommentResponse.class,
                         comment.id,
                         comment.user.id,
-                        comment.user.nickName))
+                        comment.user.nickName,
+                        comment.user.imageUrl))
                 .from(comment)
                 .join(comment.user, user)
                 .where(user.id.eq(userId)

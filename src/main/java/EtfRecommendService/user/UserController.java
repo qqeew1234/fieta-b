@@ -1,13 +1,18 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.user.dto.*;
+
 import EtfRecommendService.user.exception.PasswordMismatchException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RequestMapping(value = "/api/v1/users")
 @RequiredArgsConstructor
@@ -15,20 +20,24 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final S3Service s3Service;
 
     @PostMapping
-    public UserResponse create(@RequestBody CreateUserRequest userRequest) {
-        return userService.create(userRequest);
+    public ResponseEntity<UserResponse> create(@RequestBody CreateUserRequest userRequest) {
+        UserResponse userResponse = userService.create(userRequest);
+        return ResponseEntity.status(201).body(userResponse);
     }
 
     @PostMapping("/login")
-    public UserLoginResponse login(@RequestBody UserLoginRequest loginRequest) {
-        return userService.login(loginRequest);
+    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
+        UserLoginResponse login = userService.login(loginRequest);
+        return ResponseEntity.ok(login);
     }
 
     @PatchMapping
-    public UserUpdateResponse updateProfile(@LoginMember String auth, @RequestBody UserUpdateRequest updateRequest) {
-        return userService.UpdateProfile(auth,updateRequest);
+    public ResponseEntity<UserUpdateResponse> updateProfile(@LoginMember String auth, @RequestBody UserUpdateRequest updateRequest) {
+        UserUpdateResponse userUpdateResponse = userService.UpdateProfile(auth, updateRequest);
+        return ResponseEntity.ok(userUpdateResponse);
     }
 
     @DeleteMapping
@@ -37,21 +46,31 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/me/password")
-    public UserPasswordResponse updatePassword(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
+    @PatchMapping("/me/password")
+    public ResponseEntity<UserPasswordResponse> updatePassword(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
         if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
             throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
-        return userService.updatePassword(auth, passwordRequest);
+        UserPasswordResponse userPasswordResponse = userService.updatePassword(auth, passwordRequest);
+        return ResponseEntity.ok(userPasswordResponse);
     }
 
     @GetMapping("/{userId}")
-    public UserPageResponse findByUser(
+    public ResponseEntity<UserPageResponse> findByUser(
             @LoginMember String auth,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return userService.findByUser(auth, userId,pageable);
+        UserPageResponse userPageResponse = userService.findByUser(auth, userId, pageable);
+        return ResponseEntity.ok(userPageResponse);
     }
+
+    @PatchMapping("/image")
+    public ResponseEntity<UserProfileResponse> imageUpdate(@LoginMember String auth,
+                                           @RequestPart(value = "images") MultipartFile file) throws IOException {
+        UserProfileResponse userProfileResponse = userService.imageUpdate(auth, file);
+        return ResponseEntity.ok(userProfileResponse);
+    }
+
 }

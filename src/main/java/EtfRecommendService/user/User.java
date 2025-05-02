@@ -81,6 +81,10 @@ public class User extends BaseEntity {
         }
     }
 
+    public void updateProfileImg(String imgUrl) {
+        this.imageUrl = imgUrl;
+    }
+
     public void updatePassword(Password existingPassword,Password newPassword) {
         if (!this.isSamePassword(existingPassword)) {
             throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
