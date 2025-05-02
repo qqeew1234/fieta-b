@@ -95,7 +95,7 @@ public class CommentService {
     //Comment Create
     @Transactional
     public void create(String loginId, CommentCreateRequest commentCreateRequest) {
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new NoExistsUserIdException("User ID not found"));
         Etf etf = etfRepository.findById(commentCreateRequest.etfId())
                 .orElseThrow(() -> new NoExistsEtfIdException("Etf Id not found"));
@@ -136,7 +136,7 @@ public class CommentService {
     @Transactional
     public void update(String loginId, Long commentId, CommentUpdateRequest commentUpdateRequest) {
         // 1) 로그인된 유저 조회
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("User ID not found"));
 
         // 2) 수정 대상 댓글 로드
@@ -174,7 +174,7 @@ public class CommentService {
         // 댓글 & 유저 조회
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         // 기존 좋아요 여부 확인

@@ -1,7 +1,7 @@
 package EtfRecommendService.user;
 
-import EtfRecommendService.Reply.Reply;
-import EtfRecommendService.comment.Comment;
+import EtfRecommendService.comment.domain.Comment;
+import EtfRecommendService.reply.domain.Reply;
 import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
@@ -10,7 +10,6 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -40,7 +39,7 @@ public class User extends BaseEntity {
     private List<Comment> commentList = new ArrayList<>();
 
     private String imageUrl = "";
-
+    @Builder.Default
     private Boolean isDeleted = false;
 
     private String theme;

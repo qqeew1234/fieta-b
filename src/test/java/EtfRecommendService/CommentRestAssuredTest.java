@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CommentRestAssuredTest extends AcceptanceTest {
 
 
@@ -36,7 +35,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/comments")
+                .post("/api/v1/user/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
     }
@@ -56,7 +55,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/comments")
+                .post("/api/v1/user/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -79,7 +78,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .delete("/api/v1/comments/{commentId}")
+                .delete("/api/v1/user/comments/{commentId}")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
     }
@@ -100,7 +99,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/comments")
+                .post("/api/v1/user/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -112,7 +111,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
 
                 .body(new CommentUpdateRequest("이글을 믿고 1000%가 올랐어요"))
                 .when()
-                .put("/api/v1/comments/{commentId}")
+                .put("/api/v1/user/comments/{commentId}")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
     }
@@ -132,7 +131,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/comments")
+                .post("/api/v1/user/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -142,7 +141,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .post("/api/v1/comments/{commentId}/likes")
+                .post("/api/v1/user/comments/{commentId}/likes")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -162,7 +161,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/comments")
+                .post("/api/v1/user/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -172,7 +171,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .post("/api/v1/comments/{commentId}/likes")
+                .post("/api/v1/user/comments/{commentId}/likes")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -182,7 +181,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .post("/api/v1/comments/{commentId}/likes")
+                .post("/api/v1/user/comments/{commentId}/likes")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -206,7 +205,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/comments")
+                .post("/api/v1/user/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -218,7 +217,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .queryParam("page", page)
                 .queryParam("size", size)
                 .when()
-                .get("/api/v1/comments")
+                .get("/api/v1/user/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
