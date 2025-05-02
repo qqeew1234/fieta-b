@@ -31,7 +31,7 @@ public class ReplyLike extends BaseEntity {
     private Reply reply;
 
     public void toggleLike(User user, Reply reply){
-//        user.getReplyLikeList().add(this);
+        user.getReplyLikeList().add(this);
         reply.getReplyLikeList().add(this);
     }
 }

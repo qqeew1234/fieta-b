@@ -121,14 +121,14 @@ public class CommentService {
                 });
 
 
+        Comment comment = Comment.builder()
+                .content(commentCreateRequest.content())
+                .etf(etf)
+                .user(user)
+                .build();
+        comment.addEtfAndUser(etf, user);
 // 조건 통과 시 저장
-        commentRepository.save(
-                Comment.builder()
-                        .content(commentCreateRequest.content())
-                        .etf(etf)
-                        .user(user)
-                        .build()
-        );
+        commentRepository.save(comment);
     }
 
     //Comment Update

@@ -1,8 +1,12 @@
 package EtfRecommendService.notification;
 
+import EtfRecommendService.admin.Admin;
+import EtfRecommendService.admin.AdminRepository;
 import EtfRecommendService.etf.SubscribeRepository;
 import EtfRecommendService.etf.domain.Etf;
 import EtfRecommendService.etf.domain.Subscribe;
+import EtfRecommendService.notification.dto.NotificationDto;
+import EtfRecommendService.report.domain.ReportType;
 import EtfRecommendService.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @Slf4j
 public class NotificationService {
-//TODO: emitters Map의 메모리 누수 방지 막기
+    //TODO: emitters Map의 메모리 누수 방지 막기
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final NotificationRepository notificationRepository;
     private final SubscribeRepository subscribeRepository;
+    private final AdminRepository adminRepository;
 
-    public SseEmitter createEmitter(String receiverId, ReceiverType receiverType) {
+    public SseEmitter createEmitter(Long receiverId, ReceiverType receiverType) {
         //TODO: 시간 설정하기
         SseEmitter emitter = new SseEmitter(0L); // timeout 없음
         String emitterId = generateEmitterId(receiverId, receiverType);
@@ -66,7 +71,7 @@ public class NotificationService {
         }
     }
 
-    public void sendNotificationToUser(String receiveId, NotificationDto data) {
+    public void sendNotificationToUser(Long receiveId, NotificationDto data) {
         String emitterId = generateEmitterId(receiveId, data.receiverType());
         SseEmitter emitter = emitters.get(emitterId);
 
@@ -86,7 +91,7 @@ public class NotificationService {
         }
     }
 
-    private void saveNotification(String receiverId, NotificationDto data) {
+    private void saveNotification(Long receiverId, NotificationDto data) {
         notificationRepository.save(new Notification(
                 receiverId,
                 data.receiverType(),
@@ -96,7 +101,7 @@ public class NotificationService {
         ));
     }
 
-    private String generateEmitterId(String receiverId, ReceiverType receiverType) {
+    private String generateEmitterId(Long receiverId, ReceiverType receiverType) {
         return receiverType.name() + ":" + receiverId;
     }
 
@@ -125,20 +130,40 @@ public class NotificationService {
                     NotificationType.ETF_SUBSCRIPTION,
                     String.valueOf(etf.getId())); // 대상 ETF의 ID
 
-            // user.getId()를 String으로 변환
-            sendNotificationToUser(String.valueOf(user.getId()), notificationDto);
+            sendNotificationToUser(user.getId(), notificationDto);
         }
     }
 
+    //TODO: 댓글 신고 10개 쌓이면 관리자에게 알림 보내는 기본 코드 - 수정 필요
+    public void notifyIfReportedOverLimit(Long reportedId, ReportType reportType) {
+        // 여러 관리자에게 알림을 보내야 할 수도 있음
+        List<Long> adminIds = adminRepository.findAll().stream()
+                .map(Admin::getId)
+                .toList(); // 예시
 
+        for (Long adminId : adminIds) {
+            String emitterId = generateEmitterId(adminId, ReceiverType.ADMIN);
+            SseEmitter emitter = emitters.get(emitterId);
 
-    /*public long countUnreadNotifications(String emitterId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(emitterId);
+            if (emitter != null) {
+                try {
+                    if (reportType.equals(ReportType.COMMENT)){
+                        emitter.send(SseEmitter.event()
+                                .name("comment-report-alert")
+                                .data("댓글 ID " + reportedId + "이(가) 10회 이상 신고되었습니다."));
+                    } else if (reportType.equals(ReportType.REPLY)) {
+                        emitter.send(SseEmitter.event()
+                                .name("reply-report-alert")
+                                .data("댓글 ID " + reportedId + "이(가) 10회 이상 신고되었습니다."));
+                    }
+                } catch (IOException e) {
+                    log.warn("관리자 알림 전송 실패 {}: {}", emitterId, e.getMessage());
+                    emitters.remove(emitterId);
+                }
+            }
+        }
     }
-
-    public void markAllAsRead(String emitterId) {
-        notificationRepository.markAllAsRead(emitterId);
-    }*/
-
 }
+
+
 

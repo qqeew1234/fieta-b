@@ -10,11 +10,12 @@ public class NotificationRestController {
 
     private final NotificationService notificationService;
 
+    //receiverId = 알림 받는 사용자 즉 로그인 하는 자기 자신
     @GetMapping("/sse/notifications")
-    public SseEmitter streamNotifications(@RequestParam String receiveId,
+    public SseEmitter streamNotifications(@RequestParam Long receiverId,
                                           @RequestParam ReceiverType receiverType) {
-        System.out.println("연결 요청: " + receiveId);
-        return notificationService.createEmitter(receiveId, receiverType);
+        System.out.println("연결 요청: " + receiverId);
+        return notificationService.createEmitter(receiverId, receiverType);
     }
 
     /*

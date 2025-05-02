@@ -1,11 +1,14 @@
 package EtfRecommendService.etf.domain;
 
+import EtfRecommendService.comment.domain.Comment;
 import EtfRecommendService.etf.Theme;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -30,6 +33,9 @@ public class Etf extends BaseEntity {
 
     @Column(nullable = false)
     private Theme theme;
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> commentList = new ArrayList<>();
 
     @Builder
     public Etf(String etfName,

@@ -41,13 +41,11 @@ public class Reply extends BaseEntity {
     @OneToMany(mappedBy = "reply")
     @Builder.Default
     @ToString.Exclude
-    private List<ReplyReport> replyReportList = new ArrayList<>();
+    private List<ReplyReport> ReportList = new ArrayList<>();
 
     public void addCommentAndUser(Comment comment, User user){
-        this.comment = comment;
-        this.user = user;
-//        comment.getReplyList().add(this);
-//        user.getReplyList().add(this);
+        comment.getReplyList().add(this);
+        user.getReplyList().add(this);
     }
 
     public void update(String content) {
