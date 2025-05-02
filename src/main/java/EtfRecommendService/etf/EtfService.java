@@ -19,19 +19,49 @@ public class EtfService {
     private final EtfRepository etfRepository;
     private final UserRepository userRepository;
     private final SubscribeRepository subscribeRepository;
+    private final EtfQueryRepository etfQueryRepository;
 
-    public EtfService(EtfRepository etfRepository, UserRepository userRepository, SubscribeRepository subscribeRepository) {
+    public EtfService(EtfRepository etfRepository, UserRepository userRepository, SubscribeRepository subscribeRepository, EtfQueryRepository etfQueryRepository) {
         this.etfRepository = etfRepository;
         this.userRepository = userRepository;
         this.subscribeRepository = subscribeRepository;
+        this.etfQueryRepository = etfQueryRepository;
     }
 
-    public EtfResponse readAll(Pageable pageable, Theme theme, SortOrder sortOrder) {
-        return null;
+    //etf 전체 조회 (테마별, 순위별)
+    public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, SortOrder sortOrder) {
+        Page<Etf> etfs = etfQueryRepository.findAllByThemeAndSort(theme, sortOrder,keyword,pageable);
+
+        List<EtfReadResponse> etfReadResponseList = etfs.getContent()
+                .stream()
+                .map(etfList -> new EtfReadResponse(
+                        etfList.getId(),
+                        etfList.getEtfName(),
+                        etfList.getEtfCode()
+                ))
+                .toList();
+
+        return new EtfResponse(
+                etfs.getTotalPages(),
+                etfs.getTotalElements(),
+                etfs.getNumber()+1,
+                etfs.getSize(),
+                etfReadResponseList
+        );
     }
 
+    //etf상세조회
     public EtfDetailResponse findById(Long etfId) {
-        return null;
+        Etf etf = etfRepository.findById(etfId)
+                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
+
+        return new EtfDetailResponse(
+                etf.getId(),
+                etf.getEtfName(),
+                etf.getEtfCode(),
+                etf.getCompanyName(),
+                etf.getListingDate()
+        );
     }
 
     //회원 맞는지 확인 - 이미 구독된 종목인지 확인 - 구독
