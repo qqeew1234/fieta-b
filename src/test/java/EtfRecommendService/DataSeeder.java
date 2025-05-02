@@ -28,11 +28,7 @@ public class DataSeeder {
 
         em.persist(etf1);
 
-        User user1 = User.builder()
-                .nickName("빼빼로부자")
-                .password(new Password("password"))
-                .loginId("pepero")
-                .build();
+        User user1 = new User("pepero",new Password("password"),"빼빼로부자",false);
 
         em.persist(user1);
     }
