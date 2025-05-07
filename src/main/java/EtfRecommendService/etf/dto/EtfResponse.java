@@ -7,6 +7,6 @@ public record EtfResponse(
         Long totalCount,
         int currentPage,
         int pageSize,
-        List<EtfReadResponse> etfReadResponseList
+        List<EtfReturnDto> etfReadResponseList
 ) {
 }

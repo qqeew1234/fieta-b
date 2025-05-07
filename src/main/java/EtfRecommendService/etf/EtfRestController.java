@@ -16,15 +16,14 @@ public class EtfRestController {
 
     private final EtfService etfService;
 
-    //sortorder "" 변경 : Enum은 "" (빈 문자열)이 들어오면 바인딩 에러가 나기 때문, 없으면 null로 오게
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "20") int size,
-                                           @RequestParam(required = false) Theme theme,
-                                           @RequestParam(required = false, defaultValue = "") String keyword,
-                                           @RequestParam(required = false) SortOrder sortOrder) {
+                                            @RequestParam(defaultValue = "20") int size,
+                                            @RequestParam(required = false) Theme theme,
+                                            @RequestParam(required = false, defaultValue = "") String keyword,
+                                            @RequestParam(defaultValue = "weekly") String period) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword,sortOrder);
+        EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
