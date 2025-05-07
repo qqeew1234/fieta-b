@@ -34,7 +34,7 @@ public class Etf extends BaseEntity {
     @Column(nullable = false)
     private Theme theme;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "etf")
     private List<Comment> commentList = new ArrayList<>();
 
     @Builder

@@ -36,6 +36,7 @@ public class Comment extends BaseEntity {
 
     @ManyToOne
     @ToString.Exclude
+    @JoinColumn(name = "etf_id")
     private Etf etf;
 
     @ManyToOne

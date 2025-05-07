@@ -22,13 +22,14 @@ import EtfRecommendService.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
 @RequiredArgsConstructor
+@Service
 public class ReportService {
     private final CommentReportRepository commentReportRepository;
     private final ReplyReportRepository replyReportRepository;
@@ -36,8 +37,10 @@ public class ReportService {
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
     private final NotificationService notificationService;
-    private final int reportLimit;
     private final AdminRepository adminRepository;
+
+    @Value("${report.limit:100}") // 환경에서 주입
+    private int reportLimit;
 
     @Transactional
     public void create(String loginId, ReportRequest rq) {
@@ -85,8 +88,7 @@ public class ReportService {
                 replyReportRepository.countByReplyId(rq.replyId()));
     }
 
-    private void checkReportLimit(Long contentId, ReportType type, @Value("${report.limit}") long reportedCount) {
-
+    private void checkReportLimit(Long contentId, ReportType type, long reportedCount) {
         if (reportedCount >= reportLimit) {
             notificationService.notifyIfReportedOverLimit(contentId, type);
         }

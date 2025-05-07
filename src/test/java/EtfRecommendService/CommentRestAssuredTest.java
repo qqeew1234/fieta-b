@@ -15,12 +15,9 @@ import org.springframework.test.context.ActiveProfiles;
 public class CommentRestAssuredTest extends AcceptanceTest {
 
 
-    private final JwtProvider jwtProvider;
-
     @Autowired
-    public CommentRestAssuredTest(JwtProvider jwtProvider) {
-        this.jwtProvider = jwtProvider;
-    }
+    JwtProvider jwtProvider;
+
 
     // 댓글 생성 테스트
     @DisplayName("댓글 생성 테스트")
