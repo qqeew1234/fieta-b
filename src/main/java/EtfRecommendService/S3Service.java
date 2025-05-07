@@ -33,6 +33,9 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
+    @Value("${cloud.aws.s3.domain}")
+    private String cloudFrontDomainName;
+
     public String uploadFile(MultipartFile multipartFile) throws IOException {
         String fileName = UUID.randomUUID().toString();
 
@@ -52,7 +55,8 @@ public class S3Service {
             amazonS3.putObject(putObjectRequest);
         }
 
-        return amazonS3.getUrl(bucketName, fileName).toString();
+//        return amazonS3.getUrl(bucketName, fileName).toString(); 현재는 안쓰지만 나중에 성능비교할때 쓸수도 있음
+        return cloudFrontDomainName + "/" +fileName;
     }
 
     public void deleteFile(String fileUrl) {
