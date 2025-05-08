@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
 
 
@@ -69,7 +70,7 @@ public class UserService {
                 user.getId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.getIsLikePrivate());
+                user.isLikePrivate());
     }
 
     @Transactional
@@ -90,22 +91,36 @@ public class UserService {
         return new UserPasswordResponse(user.getId());
     }
 
-    public UserPageResponse findByUser(String loginId, Long userId, Pageable pageable) {
-        getByLoginId(loginId);
-
-        userRepository.findById(userId).orElseThrow(
+    public UserPageResponse findUserComments(String loginId, Long userId, Pageable pageable) {
+        User findUser = userRepository.findById(userId).orElseThrow(
                 () -> new NoSuchElementException("존재하지 않는 회원입니다."));
 
-        List<UserCommentResponse> list = userQueryRepository.findUserComment(userId, pageable);
+        User loginUser = getByLoginId(loginId);
 
-        long totalCount = userQueryRepository.countUserComments(userId);
+        boolean selfProfile = loginUser.isSelfProfile(userId);
+
+        // 만약 찾는유저의 정보가 비공개 설정이고 로그인한 유저의 조회가 아니라면
+        if (findUser.isLikePrivate() && !selfProfile) {
+            return new UserPageResponse(
+                    pageable.getPageNumber() + 1,
+                    pageable.getPageSize(),
+                    0,
+                    0,
+                    null
+            );
+        }
+
+        List<getUserCommentsAndReplies> getUserCommentRespons = userQueryRepository.getUserCommentsAndReplies(userId, pageable);
+
+        long totalCount = userQueryRepository.totalCount(userId);
 
         return new UserPageResponse(
                 pageable.getPageNumber() + 1,
                 pageable.getPageSize(),
                 totalCount,
                 (totalCount + pageable.getPageSize() - 1) / pageable.getPageSize(),
-                list);
+                getUserCommentRespons
+        );
     }
 
     @Transactional
@@ -123,6 +138,20 @@ public class UserService {
         user.updateProfileImg(newImageUrl);
 
         return new UserProfileResponse(user.getId(), user.getImageUrl());
+    }
+
+    public UserDetailResponse findByUserId(String loginId, Long userId) {
+        getByLoginId(loginId);
+
+        User user = userRepository.findById(userId).orElseThrow( () ->
+                new RuntimeException("존재하지 않는 유저 id : " + userId));
+
+        return new UserDetailResponse(
+                user.getId(),
+                user.getLoginId(),
+                user.getNickName(),
+                user.getImageUrl(),
+                user.isLikePrivate());
     }
 
 }

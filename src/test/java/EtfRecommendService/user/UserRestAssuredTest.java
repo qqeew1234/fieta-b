@@ -385,5 +385,46 @@ public class UserRestAssuredTest {
                 .extract();
     }
 
+    @Test
+    void 회원정보조회Test() {
+        Password password = new Password("123");
 
+        UserResponse userResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .when()
+                .post("/api/v1/users")
+                .then().log().all()
+                .statusCode(201)
+                .extract()
+                .as(UserResponse.class);
+
+        UserLoginResponse loginResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new UserLoginRequest("user1",password))
+                .when()
+                .post("/api/v1/users/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserLoginResponse.class);
+
+        String token = loginResponse.token();
+        Long userId = userResponse.id();
+
+        UserDetailResponse detailResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + token)
+                .when()
+                .get("/api/v1/users/{userId}", userId)
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserDetailResponse.class);
+
+
+    }
 }

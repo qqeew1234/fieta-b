@@ -7,5 +7,5 @@ public record UserPageResponse(
         int size,
         long totalElements,
         long totalPages,
-        List<UserCommentResponse> commentResponseList) {
+        List<getUserCommentsAndReplies> commentsAndReplies) {
 }

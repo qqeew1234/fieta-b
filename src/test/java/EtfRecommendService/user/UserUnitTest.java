@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ActiveProfiles("test")
-@ExtendWith(MockitoExtension.class)
 public class UserUnitTest {
 
     private User user;

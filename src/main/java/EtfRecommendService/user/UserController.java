@@ -55,14 +55,14 @@ public class UserController {
         return ResponseEntity.ok(userPasswordResponse);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserPageResponse> findByUser(
+    @GetMapping("/comment/{userId}")
+    public ResponseEntity<UserPageResponse> findUserComments(
             @LoginMember String auth,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        UserPageResponse userPageResponse = userService.findByUser(auth, userId, pageable);
+        UserPageResponse userPageResponse = userService.findUserComments(auth, userId, pageable);
         return ResponseEntity.ok(userPageResponse);
     }
 
@@ -71,6 +71,12 @@ public class UserController {
                                            @RequestPart(value = "images") MultipartFile file) throws IOException {
         UserProfileResponse userProfileResponse = userService.imageUpdate(auth, file);
         return ResponseEntity.ok(userProfileResponse);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDetailResponse> findByUserId(@LoginMember String auth, @PathVariable Long userId) {
+        UserDetailResponse userDetailResponse = userService.findByUserId(auth, userId);
+        return ResponseEntity.ok(userDetailResponse);
     }
 
 }
