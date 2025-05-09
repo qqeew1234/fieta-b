@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,13 @@ public class NewsService {
 
     private final NewsRepository newsRepository;
 
-    //@Scheduled(cron = "0 0 6 * * ?") // 매일 오전 6시에 실행
-    //@Scheduled(cron = "0 * * * * ?") // 매 0초 마다 실행
+    @PostConstruct
+    public void init() {
+        log.info("서버 시작 시 뉴스 스크립트 실행");
+        executePythonScript(); // 서버 시작 시 최초 1회 실행
+    }
+
+    @Scheduled(cron = "0 0 6 * * ?") // 매일 오전 6시에 실행
     public void executePythonScript() {
         log.info("뉴스 크롤링 스케줄러 실행 시작");
         try {
@@ -48,7 +54,7 @@ public class NewsService {
             log.debug("임시 파일 생성: {}", tempFile);
 
             // 스크립트 실행 및 결과 수집
-            ProcessBuilder processBuilder = new ProcessBuilder("python3", tempFile.toString());
+            ProcessBuilder processBuilder = new ProcessBuilder("python", tempFile.toString());
             processBuilder.redirectErrorStream(false); // 에러 스트림과 출력 스트림 분리
             Process process = processBuilder.start();
             log.debug("파이썬 프로세스 시작됨");
