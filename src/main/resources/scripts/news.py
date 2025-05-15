@@ -4,6 +4,9 @@ import datetime
 from urllib.parse import urljoin
 import json
 import sys
+import io
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def crawl_herald_news():
     # 경고 메시지 무시 설정

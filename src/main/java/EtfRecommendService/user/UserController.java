@@ -3,8 +3,8 @@ package EtfRecommendService.user;
 import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.user.dto.*;
-
 import EtfRecommendService.user.exception.PasswordMismatchException;
+import jakarta.persistence.Id;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -73,9 +73,9 @@ public class UserController {
         return ResponseEntity.ok(userProfileResponse);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDetailResponse> findByUserId(@LoginMember String auth, @PathVariable Long userId) {
-        UserDetailResponse userDetailResponse = userService.findByUserId(auth, userId);
+    @GetMapping("/{loginId}")
+    public ResponseEntity<UserDetailResponse> findByUserId(@LoginMember String auth, @PathVariable String loginId) {
+        UserDetailResponse userDetailResponse = userService.findByUserId(auth, loginId);
         return ResponseEntity.ok(userDetailResponse);
     }
 

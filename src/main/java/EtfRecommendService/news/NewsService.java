@@ -132,6 +132,7 @@ public class NewsService {
         return newsRepository.findAll()
                 .stream()
                 .map(news -> new NewsResponse(
+                        news.getId(),
                         news.getTitle(),
                         news.getLink(),
                         news.getImageUrl()

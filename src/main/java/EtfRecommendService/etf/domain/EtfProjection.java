@@ -1,14 +1,14 @@
 package EtfRecommendService.etf.domain;
 
 import EtfRecommendService.etf.Theme;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import EtfRecommendService.utils.BaseEntity;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,9 +23,12 @@ public class EtfProjection {
 
     private String etfCode;
 
+    @Enumerated(EnumType.STRING)
     private Theme theme;
 
     private double weeklyReturn;
 
     private double monthlyReturn;
+
+    private LocalDate date;
 }

@@ -29,18 +29,18 @@ public class EtfService {
         this.etfQueryRepository = etfQueryRepository;
     }
 
-    @Cacheable(
-            cacheNames = "etfPages",
-            key = "T(java.lang.String).format(" +
-                    "'%d-%d-%s-%s-%s-%s', " +
-                    "#pageable.pageNumber, " +
-                    "#pageable.pageSize, " +
-                    "(#pageable.sort == null ? '' : #pageable.sort.toString()), " +
-                    "(#theme != null ? #theme.name() : ''), " +
-                    "#keyword, " +
-                    "#period" +
-                    ")"
-    )
+//    @Cacheable(
+//            cacheNames = "etfPages",
+//            key = "T(java.lang.String).format(" +
+//                    "'%d-%d-%s-%s-%s-%s', " +
+//                    "#pageable.pageNumber, " +
+//                    "#pageable.pageSize, " +
+//                    "(#pageable.sort == null ? '' : #pageable.sort.toString()), " +
+//                    "(#theme != null ? #theme.name() : ''), " +
+//                    "#keyword, " +
+//                    "#period" +
+//                    ")"
+//    )
     public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, String period) {
         long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
         int totalPage = (int) Math.ceil((double) totalCount / pageable.getPageSize());
@@ -51,6 +51,7 @@ public class EtfService {
                 .findEtfsByPeriod(theme, keyword, pageable, period)
                 .stream()
                 .map(dto -> new EtfReturnDto(
+                        dto.etfId(),
                         dto.etfName(),
                         dto.etfCode(),
                         dto.theme(),

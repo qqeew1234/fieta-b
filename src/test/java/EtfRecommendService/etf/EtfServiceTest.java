@@ -41,13 +41,13 @@ class EtfServiceTest {
         keyword = "SAMSUNG";
 
         weeklyEtfDtos = Arrays.asList(
-                new EtfReturnDto("Samsung Electronics ETF", "005930", Theme.AI_DATA, 1.5),
-                new EtfReturnDto("Samsung Biologics ETF", "207940", Theme.AI_DATA, 2.3)
+                new EtfReturnDto(1L,"Samsung Electronics ETF", "005930", Theme.AI_DATA, 1.5),
+                new EtfReturnDto(2L,"Samsung Biologics ETF", "207940", Theme.AI_DATA, 2.3)
         );
 
         monthlyEtfDtos = Arrays.asList(
-                new EtfReturnDto("Samsung Electronics ETF", "005930", Theme.AI_DATA, 5.2),
-                new EtfReturnDto("Samsung Biologics ETF", "207940", Theme.AI_DATA, 7.8)
+                new EtfReturnDto(1L,"Samsung Electronics ETF", "005930", Theme.AI_DATA, 5.2),
+                new EtfReturnDto(2L,"Samsung Biologics ETF", "207940", Theme.AI_DATA, 7.8)
         );
     }
 
