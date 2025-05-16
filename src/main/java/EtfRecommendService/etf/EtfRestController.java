@@ -1,12 +1,15 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.dto.*;
-import EtfRecommendService.loginUtils.LoginMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ public class EtfRestController {
 
     private final EtfService etfService;
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "20") int size,
@@ -27,30 +31,34 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs/{etfId}")
     public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId){
         EtfDetailResponse etfDetailResponse = etfService.findById(etfId);
         return ResponseEntity.status(HttpStatus.OK).body(etfDetailResponse);
     }
 
-    @PostMapping("/users/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeResponse> create(@LoginMember String memberLoginId, @PathVariable Long etfId){
-        SubscribeResponse subscribeResponse = etfService.subscribe(memberLoginId, etfId);
+    @Secured("ROLE_USER")
+    @PostMapping("/etfs/{etfId}/subscription")
+    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+        SubscribeResponse subscribeResponse = etfService.subscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscribeResponse);
     }
 
-    @GetMapping("/users/etfs/subscribes")
-    public ResponseEntity<SubscribeListResponse> subscribeReadAll(@LoginMember String memberLoginId,
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/etfs/subscribes")
+    public ResponseEntity<SubscribeListResponse> subscribeReadAll(@AuthenticationPrincipal UserDetails userDetails,
                                                   @RequestParam(defaultValue = "1") int page,
                                                   @RequestParam(defaultValue = "20") int size){
         Pageable pageable = PageRequest.of(page - 1, size);
-        SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, memberLoginId);
+        SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(subscribeListResponse);
     }
 
-    @DeleteMapping("/users/etf/{etfId}/subscription")
-    public ResponseEntity<SubscribeDeleteResponse> delete(@LoginMember String memberLoginId, @PathVariable Long etfId){
-        SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(memberLoginId, etfId);
+    @Secured("ROLE_USER")
+    @DeleteMapping("/etf/{etfId}/subscription")
+    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+        SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
 

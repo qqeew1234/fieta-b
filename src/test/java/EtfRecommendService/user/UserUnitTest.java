@@ -7,6 +7,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 
@@ -32,9 +34,10 @@ public class UserUnitTest {
         Password existingPassword = new Password("현재비밀번호");
         Password newPassword = new Password("새비밀번호");
 
-        user.updatePassword(existingPassword,newPassword);
+        user.updatePassword("현재비밀번호","새비밀번호");
 
-        assertThat(user.getPassword()).isEqualTo(newPassword);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        assertThat(passwordEncoder.matches("새비밀번호",user.getPassword().getHash())).isTrue();
     }
 
     @Test
@@ -45,7 +48,7 @@ public class UserUnitTest {
 
         PasswordMismatchException exception = assertThrows(
                 PasswordMismatchException.class,
-                () -> user.updatePassword(existingPassword, newPassword)
+                () -> user.updatePassword(existingPassword.getHash(), newPassword.getHash())
         );
 
         assertEquals("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.", exception.getMessage());
@@ -59,7 +62,7 @@ public class UserUnitTest {
 
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> user.updatePassword(existingPassword, newPassword)
+                () -> user.updatePassword("현재비밀번호", "현재비밀번호")
         );
 
         assertEquals("변경할 비밀번호가 같습니다.", exception.getMessage());

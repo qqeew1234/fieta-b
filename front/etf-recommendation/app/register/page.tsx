@@ -17,7 +17,7 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/v1/users", {
+      const res = await fetch("https://localhost:8443/api/v1/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

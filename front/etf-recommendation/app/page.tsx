@@ -62,7 +62,7 @@ export default function Home() {
   useEffect(() => {
     const fetchEtfs = async (page: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v1/etfs?page=${page}&size=20&period=weekly`);
+        const response = await fetch(`https://localhost:8443/api/v1/etfs?page=${page}&size=20&period=weekly`);
         const data = await response.json();
 
         const newEtfs: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({

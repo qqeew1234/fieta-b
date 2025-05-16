@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { login } from "./actions"
 import { Button } from "@/components/ui/button"
@@ -19,8 +20,10 @@ export default function LoginPage() {
   const [password, setPassword]     = useState("")
   const [isLoading, setIsLoading]   = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+  const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
+
     e.preventDefault()
     if (!loginId || !password) {
       setErrorMessage("아이디와 비밀번호를 모두 입력해주세요.")
@@ -31,6 +34,7 @@ export default function LoginPage() {
     setErrorMessage("")
     try {
       await login(loginId, password)
+      router.push("/")
     } catch (err: any) {
       // NEXT_REDIRECT 에러면 아무것도 안 하고 리턴 (Next.js가 실제로는 redirect 처리)
       if (err?.digest?.startsWith("NEXT_REDIRECT")) {

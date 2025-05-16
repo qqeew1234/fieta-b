@@ -10,6 +10,8 @@ import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,14 +28,13 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String loginId;
 
     @Embedded
-    @Column(nullable = false)
     private Password password;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nickName;
 
     @OneToMany(mappedBy = "user")
@@ -108,17 +109,17 @@ public class User extends BaseEntity {
         this.imageUrl = imgUrl;
     }
 
-    public void updatePassword(Password existingPassword,Password newPassword) {
+    public void updatePassword(String existingPassword,String newPassword) {
         if (!this.isSamePassword(existingPassword)) {
             throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
         }
-        if (this.isSamePassword(newPassword)) {
+        if (existingPassword.equals(newPassword)) {
             throw new RuntimeException("변경할 비밀번호가 같습니다.");
         }
-        this.password = newPassword;
+        this.password = new Password(newPassword);
     }
 
-    public boolean isSamePassword(Password otherPassword) {
+    public boolean isSamePassword(String otherPassword) {
         if (this.getPassword().isSamePassword(otherPassword)) {
             return true;
         }

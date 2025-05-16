@@ -63,7 +63,7 @@ async function fetchEtfsByTheme(
     keyword: string = ''
 ): Promise<EtfResponse> {
     // API URL - 환경 변수 사용
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8443'
     // 기본적으로 weekly로 고정
     const apiUrl = `${baseUrl}/api/v1/etfs?theme=${theme}&page=${page}&size=${size}&period=weekly&keyword=${encodeURIComponent(keyword)}`
 

@@ -1,21 +1,37 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
+import EtfRecommendService.admin.Admin;
+import EtfRecommendService.admin.AdminRepository;
 import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.loginUtils.JwtTokens;
+import EtfRecommendService.security.RefreshTokenDetails;
+import EtfRecommendService.security.RefreshTokenRepository;
+import EtfRecommendService.security.TokenNotFoundException;
+import EtfRecommendService.security.UserDetail;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
+import com.amazonaws.services.kms.model.NotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
-
 
 
 @RequiredArgsConstructor
@@ -26,37 +42,13 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     private final UserQueryRepository userQueryRepository;
+    private final AuthenticationManager authenticationManager;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AdminRepository adminRepository;
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
                 () -> new UserMismatchException(USER_MISMATCH));
-    }
-
-    public UserResponse create(CreateUserRequest userRequest) {
-
-        User user = new User(
-                userRequest.loginId(),
-                userRequest.password(),
-                userRequest.nickName(),
-                userRequest.isLikePrivate());
-
-        userRepository.save(user);
-
-        return new UserResponse(
-                user.getId(),
-                userRequest.loginId(),
-                userRequest.nickName(),
-                userRequest.isLikePrivate());
-    }
-
-    public UserLoginResponse login(UserLoginRequest loginRequest) {
-        User user = getByLoginId(loginRequest.loginId());
-
-        if (!user.isSamePassword(loginRequest.password())) {
-            throw new UserMismatchException(USER_MISMATCH);
-        }
-
-        return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
     }
 
     @Transactional
@@ -141,11 +133,11 @@ public class UserService {
         return new UserProfileResponse(user.getId(), user.getImageUrl());
     }
 
-    public UserDetailResponse findByUserId(String myLoginId, String loginId) {
-        getByLoginId(myLoginId);
-        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(() ->
-                new RuntimeException("존재하지 않는 유저 id : " + loginId));
+    public UserDetailResponse findByUserId(String loginId, Long userId) {
+        getByLoginId(loginId);
 
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new RuntimeException("존재하지 않는 유저 id : " + userId));
 
         return new UserDetailResponse(
                 user.getId(),
@@ -155,5 +147,4 @@ public class UserService {
                 user.isLikePrivate(),
                 user.getCreatedAt());
     }
-
 }

@@ -25,3 +25,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 인증서 및 개인 키 파일 제외
+certificates/
+*.pem
+*.key
+*.crt
+*.p12

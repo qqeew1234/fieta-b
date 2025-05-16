@@ -3,13 +3,18 @@ package EtfRecommendService;
 import EtfRecommendService.comment.dto.CommentCreateRequest;
 import EtfRecommendService.comment.dto.CommentUpdateRequest;
 import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.security.UserDetail;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
 
 @ActiveProfiles("test")
 public class CommentRestAssuredTest extends AcceptanceTest {
@@ -19,12 +24,15 @@ public class CommentRestAssuredTest extends AcceptanceTest {
     JwtProvider jwtProvider;
 
 
+
     // 댓글 생성 테스트
     @DisplayName("댓글 생성 테스트")
     @Test
     void 댓글생성테스트() {
 
-        String token = jwtProvider.createToken("pepero");
+        UserDetails userDetails = new UserDetail("pepero",null, List.of(new SimpleGrantedAuthority("ROLE_"+"USER")));
+
+        String token = jwtProvider.createToken(userDetails);
 
         RestAssured
                 .given().log().all()
@@ -32,7 +40,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/user/comments")
+                .post("/api/v1/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
     }
@@ -43,7 +51,9 @@ public class CommentRestAssuredTest extends AcceptanceTest {
     @Test
     void 댓글삭제테스트() {
 
-        String token = jwtProvider.createToken("pepero");
+        UserDetails userDetails = new UserDetail("pepero",null, List.of(new SimpleGrantedAuthority("ROLE_"+"USER")));
+
+        String token = jwtProvider.createToken(userDetails);
 
         RestAssured
                 .given().log().all()
@@ -52,7 +62,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/user/comments")
+                .post("/api/v1/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -75,7 +85,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .delete("/api/v1/user/comments/{commentId}")
+                .delete("/api/v1/comments/{commentId}")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
     }
@@ -87,7 +97,9 @@ public class CommentRestAssuredTest extends AcceptanceTest {
     void 댓글수정테스트() {
 
 
-        String token = jwtProvider.createToken("pepero");
+        UserDetails userDetails = new UserDetail("pepero",null, List.of(new SimpleGrantedAuthority("ROLE_"+"USER")));
+
+        String token = jwtProvider.createToken(userDetails);
 
 
         RestAssured
@@ -96,7 +108,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/user/comments")
+                .post("/api/v1/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -108,7 +120,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
 
                 .body(new CommentUpdateRequest("이글을 믿고 1000%가 올랐어요"))
                 .when()
-                .put("/api/v1/user/comments/{commentId}")
+                .put("/api/v1/comments/{commentId}")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
     }
@@ -119,7 +131,9 @@ public class CommentRestAssuredTest extends AcceptanceTest {
     @Test
     void 댓글좋아요테스트() {
 
-        String token = jwtProvider.createToken("pepero");
+        UserDetails userDetails = new UserDetail("pepero",null, List.of(new SimpleGrantedAuthority("ROLE_"+"USER")));
+
+        String token = jwtProvider.createToken(userDetails);
 
 
         RestAssured
@@ -128,7 +142,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/user/comments")
+                .post("/api/v1/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -138,7 +152,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .post("/api/v1/user/comments/{commentId}/likes")
+                .post("/api/v1/comments/{commentId}/likes")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -150,7 +164,9 @@ public class CommentRestAssuredTest extends AcceptanceTest {
     @Test
     void 댓글좋아요취소테스트() {
 
-        String token = jwtProvider.createToken("pepero");
+        UserDetails userDetails = new UserDetail("pepero",null, List.of(new SimpleGrantedAuthority("ROLE_"+"USER")));
+
+        String token = jwtProvider.createToken(userDetails);
 
         RestAssured
                 .given().log().all()
@@ -158,7 +174,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/user/comments")
+                .post("/api/v1/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -168,7 +184,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .post("/api/v1/user/comments/{commentId}/likes")
+                .post("/api/v1/comments/{commentId}/likes")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -178,7 +194,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .pathParam("commentId", 1)
                 .when()
-                .post("/api/v1/user/comments/{commentId}/likes")
+                .post("/api/v1/comments/{commentId}/likes")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -190,7 +206,9 @@ public class CommentRestAssuredTest extends AcceptanceTest {
     @Test
     void 댓글조회테스트() {
 
-        String token = jwtProvider.createToken("pepero");
+        UserDetails userDetails = new UserDetail("pepero",null, List.of(new SimpleGrantedAuthority("ROLE_"+"USER")));
+
+        String token = jwtProvider.createToken(userDetails);
 
         Long etfId = 1L;
         int page = 0;
@@ -202,7 +220,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .contentType("application/json")
                 .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
                 .when()
-                .post("/api/v1/user/comments")
+                .post("/api/v1/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
@@ -214,7 +232,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
                 .queryParam("page", page)
                 .queryParam("size", size)
                 .when()
-                .get("/api/v1/user/comments")
+                .get("/api/v1/comments")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 

@@ -1,4 +1,4 @@
-import ProfileClient from './profile-client';
+    import ProfileClient from './profile-client';
 import { cookies } from 'next/headers';
 import {redirect} from "next/navigation";
 
@@ -20,7 +20,7 @@ export default async function ProfilePage({
     let initialProfileData = null;
     if (accessToken) {
         try {
-            const response = await fetch(`http://localhost:8080/api/v1/users/${loginId}`, {
+            const response = await fetch(`https://localhost:8443/api/v1/users/${loginId}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'

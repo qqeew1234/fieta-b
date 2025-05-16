@@ -43,7 +43,7 @@ public class CommentRepositoryCustom {
                 .join(qComment.etf, qEtf)
                 .join(qComment.user, qUser)
                 .leftJoin(qComment.commentLikeList, qCommentLike)
-                .where(qComment.etf.id.eq(etfId))
+                .where(qComment.etf.id.eq(etfId).and(qComment.isDeleted.eq(false)))
                 .groupBy(qComment.id);
 
         //정렬기준이 내림차순인지 오름차순인지 확인
@@ -73,9 +73,9 @@ public class CommentRepositoryCustom {
 
     private long countTotalElements(Long etfId){
         return Optional.ofNullable(queryFactory
-                .select(qComment.etf.count())
+                .select(qComment.count())
                 .from(qComment)
-                .where(qComment.etf.id.eq(etfId))
+                .where(qComment.etf.id.eq(etfId).and(qComment.isDeleted.eq(false)))
                 .fetchOne()).orElse(0L);
     }
 

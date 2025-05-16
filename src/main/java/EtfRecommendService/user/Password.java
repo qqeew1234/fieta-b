@@ -1,6 +1,7 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.loginUtils.SecurityUtils;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,20 +13,18 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Password {
 
-    private String password;
+    @Column(nullable = false)
+    private String hash;
 
-    public Password(String password) {
-        if (password == null || password.isEmpty()) {
+    public Password(String rawPassword) {
+        if (rawPassword == null || rawPassword.isEmpty()) {
             throw new RuntimeException("비밀번호가 공백이면 안됩니다.");
         }
-        this.password = SecurityUtils.sha256EncryptHex2(password);
+        this.hash = SecurityUtils.bcryptEncrypt(rawPassword);
     }
 
-    public boolean isSamePassword(Password otherPassword) {
-        if (this.password.equals(otherPassword.getPassword())) {
-            return true;
-        }
-        return false;
+    public boolean isSamePassword(String otherPassword) {
+        return SecurityUtils.bcryptMatches(otherPassword, this.hash);
     }
 
     @Override
@@ -33,12 +32,12 @@ public class Password {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Password password1 = (Password) o;
-        return Objects.equals(password, password1.password);
+        return Objects.equals(hash, password1.hash);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(password);
+        return Objects.hashCode(hash);
     }
 
 }

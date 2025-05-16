@@ -17,4 +17,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Optional<Comment> findTopByUserAndEtfOrderByCreatedAtDesc(User user, Etf etf);
 
     Page<Comment> findAllByEtfId(Long etfId, Pageable pageable);
+
+    Optional<Comment> findByIdAndIsDeletedFalse(Long commentId);
 }

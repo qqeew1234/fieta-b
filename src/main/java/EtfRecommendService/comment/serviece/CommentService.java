@@ -140,7 +140,7 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("User ID not found"));
 
         // 2) 수정 대상 댓글 로드
-        Comment comment = commentRepository.findById(commentId)
+        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment ID not found"));
 
         // 3) 권한 검사: 작성자와 일치해야
@@ -157,9 +157,9 @@ public class CommentService {
     //Comment Soft Delete
     @Transactional
     public void delete(String loginId, Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
+        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
-        comment.setDeleted(true); // isDeleted = true 로 표시
+        comment.setDeleted(); // isDeleted = true 로 표시
 
         // sysout 으로 확인
         System.out.println(">> [Soft Delete] comment.id=" + comment.getId()
@@ -172,7 +172,7 @@ public class CommentService {
     @Transactional
     public ToggleLikeResponse toggleLike(String loginId, Long commentId) {
         // 댓글 & 유저 조회
-        Comment comment = commentRepository.findById(commentId)
+        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -206,7 +206,7 @@ public class CommentService {
     public CommentResponse readOneComment(String loginId, Long commentId) {
         //이부분은 Spring Security 적용해서 권한 검증하는 방식으로 교체할것- 임시 권한 검증책
         Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(()->new EntityNotFoundException("User is not Admin"));
-        Comment comment = commentRepository.findById(commentId).orElseThrow(()->new EntityNotFoundException("Not found Comment"));
+        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId).orElseThrow(()->new EntityNotFoundException("Not found Comment"));
         return CommentResponse.toDto(comment);
     }
 }

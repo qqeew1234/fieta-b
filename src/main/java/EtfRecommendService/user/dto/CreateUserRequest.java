@@ -4,7 +4,7 @@ import EtfRecommendService.user.Password;
 
 public record CreateUserRequest(
         String loginId,
-        Password password,
+        String password,
         String nickName,
         Boolean isLikePrivate) {
 }

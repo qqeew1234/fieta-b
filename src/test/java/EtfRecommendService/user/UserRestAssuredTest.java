@@ -1,6 +1,7 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.DatabaseCleanup;
+import EtfRecommendService.admin.AdminDataSeeder;
 import EtfRecommendService.user.dto.*;
 
 import io.restassured.RestAssured;
@@ -26,65 +27,63 @@ public class UserRestAssuredTest {
     @Autowired
     DatabaseCleanup databaseCleanup;
 
+    @Autowired
+    private AdminDataSeeder adminDataSeeder;
+
     @BeforeEach
     void setUp() throws IOException {
         databaseCleanup.execute();
         RestAssured.port = port;
+        RestAssured.baseURI = "https://localhost";
+        RestAssured.useRelaxedHTTPSValidation();
     }
 
     @Test
     void 멤버생성Test() {
-        Password password = new Password("123");
-
         RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1",password,"nick1",false))
+                .body(new UserCreateRequest("user1","123","nick1",false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201);
     }
 
     @Test
     void 로그인Test() {
-        Password password = new Password("123");
 
         UserResponse userResponse = RestAssured
 
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
-        UserLoginResponse loginResponse = RestAssured
+        RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1",password))
+                .body(new UserLoginRequest("user1","123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
-                .statusCode(200)
-                .extract()
-                .as(UserLoginResponse.class);
+                .statusCode(200);
+
     }
 
     @Test
     void 다른비밀번호Test() {
-        Password password = new Password("123");
-        Password wrongPassword = new Password("1234");
-
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -93,9 +92,9 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", wrongPassword))
+                .body(new UserLoginRequest("user1", "1234", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(401)
                 .extract()
@@ -105,14 +104,12 @@ public class UserRestAssuredTest {
 
     @Test
     void 회원수정Test() {
-        Password password = new Password("123");
-
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -121,14 +118,13 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", "123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)  // 400에서 200으로 수정
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         UserUpdateRequest updateRequest = new UserUpdateRequest("newNick",false);
 
@@ -143,18 +139,45 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .as(UserUpdateResponse.class);
+        adminDataSeeder.seedAdmin();
+
+        String adminToken = RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .body(UserLoginRequest
+                        .builder()
+                        .loginId("admin")
+                        .password("password")
+                        .role("ADMIN")
+                        .build())
+                .when()
+                .post("/api/v1/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .cookie("accessToken");
+
+
+        RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body(updateRequest)
+                .when()
+                .patch("/api/v1/users")
+                .then().log().all()
+                .statusCode(403);
     }
 
     @Test
     void 회원삭제Test() {
-        Password password = new Password("123");
+
 
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -163,14 +186,13 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", "123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
@@ -191,9 +213,9 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -202,20 +224,19 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", "123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         UserPasswordResponse response = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(password,newPassword,newPassword))
+                .body(new UserPasswordRequest("123","321","321"))
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
@@ -234,9 +255,9 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -245,20 +266,19 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", "123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(noPassword,newPassword,confirmPassword))
+                .body(new UserPasswordRequest(noPassword.getHash(),newPassword.getHash(),confirmPassword.getHash()))
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
@@ -275,9 +295,9 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -286,20 +306,19 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", "123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(password,newPassword,confirmPassword))
+                .body(new UserPasswordRequest(password.getHash(),newPassword.getHash(),confirmPassword.getHash()))
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
@@ -314,9 +333,9 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -325,24 +344,23 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", "123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(password,password,password))
+                .body(new UserPasswordRequest("123","123","123"))
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
-                .statusCode(500)
+                    .statusCode(500)
                 .extract();
     }
 
@@ -353,9 +371,9 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
@@ -364,20 +382,19 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", "123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(password,null,null))
+                .body(new UserPasswordRequest(password.getHash(),null,null))
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
@@ -392,34 +409,33 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", "123", "nick1", false))
                 .when()
-                .post("/api/v1/users")
+                .post("/api/v1/join")
                 .then().log().all()
                 .statusCode(201)
                 .extract()
                 .as(UserResponse.class);
 
-        UserLoginResponse loginResponse = RestAssured
+        String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1",password))
+                .body(new UserLoginRequest("user1","123", "USER"))
                 .when()
-                .post("/api/v1/users/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .as(UserLoginResponse.class);
+                .cookie("accessToken");
 
-        String token = loginResponse.token();
-        String loginId = userResponse.loginId();
+        Long userId = userResponse.id();
 
         UserDetailResponse detailResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
                 .when()
-                .get("/api/v1/users/{loginId}", loginId)
+                .get("/api/v1/users/{userId}", userId)
                 .then().log().all()
                 .statusCode(200)
                 .extract()

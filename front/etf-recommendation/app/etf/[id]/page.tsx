@@ -61,7 +61,7 @@ export default function ETFDetailPage() {
   useEffect(() => {
     if (!etfId) return
 
-    fetch(`http://localhost:8080/api/v1/etfs/${etfId}`)
+    fetch(`https://localhost:8443/api/v1/etfs/${etfId}`)
         .then(res => {
           if (!res.ok) throw new Error('ETF not found')
           return res.json()

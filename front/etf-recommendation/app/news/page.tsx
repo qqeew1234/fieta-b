@@ -13,7 +13,7 @@ interface NewsResponse {
 
 // 뉴스 API 호출 함수
 async function fetchEconomicNews(): Promise<NewsResponse[]> {
-    const response = await fetch("http://localhost:8080/api/v1/news");
+    const response = await fetch("https://localhost:8443/api/v1/news");
     if (!response.ok) {
         throw new Error("뉴스를 불러오는 데 실패했습니다.");
     }
