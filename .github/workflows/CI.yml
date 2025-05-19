@@ -11,7 +11,6 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
-  SSL_KEY_PASSWORD: ${{ secrets.SSL_KEY_PASSWORD }}
 
 jobs:
   test:
@@ -41,11 +40,6 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Restore keystore.p12 from base64
-        run: echo -n "$KEYSTORE_P12_B64" | base64 -d > ./src/test/resources/keystore.p12
-        env:
-          KEYSTORE_P12_B64: ${{ secrets.KEYSTORE_P12_B64 }}
 
       - name: Run tests
         run: ./gradlew test --no-daemon
@@ -78,11 +72,6 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Restore keystore.p12 from base64
-        run: echo -n "$KEYSTORE_P12_B64" | base64 -d > ./src/main/resources/keystore.p12
-        env:
-          KEYSTORE_P12_B64: ${{ secrets.KEYSTORE_P12_B64 }}
 
       - name: Build application
         run: ./gradlew build --no-daemon

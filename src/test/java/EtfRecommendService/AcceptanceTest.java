@@ -23,7 +23,5 @@ public class AcceptanceTest {
         RestAssured.port = port;
         databaseCleanup.execute();
         dataSeeder.initData();
-        RestAssured.baseURI = "https://localhost";
-        RestAssured.useRelaxedHTTPSValidation();
     }
 }
