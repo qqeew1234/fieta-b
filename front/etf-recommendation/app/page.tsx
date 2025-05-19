@@ -52,20 +52,22 @@ const themeNameMap: Record<string, string> = {
 
 
 export default function Home() {
-  const [etfData, setEtfData] = useState<ETF[]>([])
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('all');
   const [sortKey, setSortKey] = useState('returnRate');
+  const [etfData, setEtfData] = useState<ETF[]>([]);
+  const [allEtfData, setAllEtfData] = useState<ETF[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  //전체 데이터 (allEtfData) 최초 로딩
   useEffect(() => {
-    const fetchEtfs = async (page: number) => {
+    const fetchAllEtfs = async () => {
       try {
-        const response = await fetch(`https://localhost:8443/api/v1/etfs?page=${page}&size=20&period=weekly`);
-        const data = await response.json();
+        const res = await fetch(`https://localhost:8443/api/v1/etfs?page=1&size=10000&period=weekly`);
+        const data = await res.json();
 
-        const newEtfs: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
+        const allEtfs: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
           id: etf.etfId,
           name: etf.etfName,
           ticker: etf.etfCode,
@@ -76,81 +78,100 @@ export default function Home() {
           returnRate: etf.returnRate,
         }));
 
-        // 중복 제거
-        setEtfData((prev) => {
-          const existingIds = new Set(prev.map((etf) => etf.id));
-          const filteredNew = newEtfs.filter((etf) => !existingIds.has(etf.id));
-          return [...prev, ...filteredNew];
+
+        setAllEtfData(allEtfs);
+      } catch (error) {
+        console.error('전체 ETF 로딩 실패', error);
+      }
+    };
+
+    fetchAllEtfs();
+  }, []);
+//페이지네이션 로딩
+  useEffect(() => {
+    const fetchEtfPage = async () => {
+      try {
+        const res = await fetch(`https://localhost:8443/api/v1/etfs?page=${page}&size=20&period=weekly`);
+        const data = await res.json();
+
+        const pageEtfs: ETF[] = data.etfReadResponseList.map((etf: any,index:number) => ({
+          id: etf.etfId,
+          name: etf.etfName,
+          ticker: etf.etfCode,
+          theme: etf.theme,
+          price: 10000 + index * 100,
+          change: parseFloat((Math.random() * 5).toFixed(2)) * (Math.random() > 0.5 ? 1 : -1),
+          volume: Math.floor(Math.random() * 100000),
+          returnRate: etf.returnRate,
+        }));
+
+        setEtfData(prev => {
+          const ids = new Set(prev.map((etf) => etf.id));
+          return [...prev, ...pageEtfs.filter(etf => !ids.has(etf.id))];
         });
 
+        if (pageEtfs.length < 20) setHasMore(false);
       } catch (error) {
-        console.error('ETF 데이터 로딩 에러:', error);
+        console.error('ETF 페이지 로딩 실패', error);
       }
-  };
-    fetchEtfs(page);
+    };
+
+    fetchEtfPage();
   }, [page]);
-  // 수익률 기준 정렬
-  const sortedEtfs = [...etfData].sort((a, b) => b.returnRate - a.returnRate)
 
-  // 상승률 상위 ETF
-  const topGainers = [...etfData].sort((a, b) => b.change - a.change).slice(0, 3)
+  const sortedByChange = allEtfData
+      .filter(etf => typeof etf.change === 'number' && !isNaN(etf.change))
+      .slice();
 
-  // 하락률 상위 ETF
-  const topLosers = [...etfData].sort((a, b) => a.change - b.change).slice(0, 3)
+  const topGainers = sortedByChange
+      .sort((a, b) => b.change - a.change)
+      .slice(0, 5);
 
-  const topThemes = useMemo(() => {
-    if (etfData.length === 0) return [];
+  const topLosers = sortedByChange
+      .sort((a, b) => a.change - b.change)
+      .slice(0, 5);
 
-    // 테마별 데이터 분류 및 평균 수익률 계산
-    const themeMap: Record<string, { totalReturn: number; count: number }> = {};
 
-    etfData.forEach(etf => {
-      if (!themeMap[etf.theme]) {
-        themeMap[etf.theme] = { totalReturn: 0, count: 0 };
-      }
-      themeMap[etf.theme].totalReturn += etf.returnRate;
-      themeMap[etf.theme].count += 1;
-    });
+  // 테마별 데이터 분류 및 평균 수익률 계산
+    const topThemes = useMemo(() => {
+      const map: Record<string, { total: number, count: number }> = {};
 
-    const result = Object.entries(themeMap)
-        .map(([theme, data]) => ({
-          id: theme,
-          name: theme, // 실제 이름이 필요하면 매핑 테이블 사용
-          returnRate: data.totalReturn / data.count,
-          etfCount: data.count,
-        }))
-        .sort((a, b) => b.returnRate - a.returnRate)
-        .slice(0, 4); // 상위 4개만
+      allEtfData.forEach(etf => {
+        if (!map[etf.theme]) map[etf.theme] = { total: 0, count: 0 };
+        map[etf.theme].total += etf.returnRate;
+        map[etf.theme].count += 1;
+      });
 
-    return result;
-  }, [etfData]);
+      return Object.entries(map)
+          .map(([theme, { total, count }]) => ({
+            id: theme,
+            name: theme,
+            returnRate: total / count,
+            etfCount: count
+          }))
+          .sort((a, b) => b.returnRate - a.returnRate)
+          .slice(0, 4);
+    }, [allEtfData]);
 
+
+  //ETF 랭킹 테이블
   const filteredEtfs = useMemo(() => {
-    let filtered = [...etfData];
+    let result = [...etfData];
 
-    // 테마 필터
     if (selectedTheme !== 'all') {
-      filtered = filtered.filter(etf => etf.theme === selectedTheme);
+      result = result.filter(e => e.theme === selectedTheme);
     }
 
-    // 검색 필터
-    if (searchQuery.trim() !== '') {
+    if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(etf =>
-          etf.name.toLowerCase().includes(query) || etf.ticker.toLowerCase().includes(query)
+      result = result.filter(e =>
+          e.name.toLowerCase().includes(query) || e.ticker.toLowerCase().includes(query)
       );
     }
 
-    // 정렬
-    filtered.sort((a, b) => {
-      if (sortKey === 'price') return b.price - a.price;
-      if (sortKey === 'change') return b.change - a.change;
-      if (sortKey === 'volume') return b.volume - a.volume;
-      return b.returnRate - a.returnRate;
-    });
+    return result.sort((a, b) => b[sortKey as keyof ETF] - a[sortKey as keyof ETF]);
+  }, [etfData, selectedTheme, searchQuery, sortKey]);
 
-    return filtered;
-  }, [etfData, searchQuery, selectedTheme, sortKey]);
 
 
   const handleLoadMore = () => {
@@ -186,16 +207,21 @@ export default function Home() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-400">{etfData.length > 0 ? `+${Math.max(...etfData.map(etf => etf.returnRate)).toFixed(1)}%` : '...'}</div>
-                <p className="text-sm text-white/70">  {
-                  etfData.length > 0
-                      ? etfData.reduce((prev, curr) =>
-                          curr.returnRate === Math.max(...etfData.map(e => e.returnRate)) ? curr : prev
+                <div className="text-3xl font-bold text-green-400">
+                  {allEtfData.length > 0
+                      ? `+${Math.max(...allEtfData.map(etf => etf.returnRate)).toFixed(1)}%`
+                      : '...'}
+                </div>
+                <p className="text-sm text-white/70">
+                  {allEtfData.length > 0
+                      ? allEtfData.reduce((prev, curr) =>
+                          curr.returnRate === Math.max(...allEtfData.map(e => e.returnRate)) ? curr : prev
                       ).name
-                      : ''
-                }</p>
+                      : ''}
+                </p>
               </CardContent>
             </Card>
+
             <Card className="bg-white/10 border-0">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -204,12 +230,15 @@ export default function Home() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-400"> {etfData.length > 0
-                    ? `+${(etfData.reduce((sum, etf) => sum + etf.returnRate, 0) / etfData.length).toFixed(1)}%`
-                    : '...'}</div>
+                <div className="text-3xl font-bold text-green-400">
+                  {allEtfData.length > 0
+                      ? `+${(allEtfData.reduce((sum, etf) => sum + etf.returnRate, 0) / allEtfData.length).toFixed(1)}%`
+                      : '...'}
+                </div>
                 <p className="text-sm text-white/70">전체 ETF 기준</p>
               </CardContent>
             </Card>
+
             <Card className="bg-white/10 border-0 col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">시장 요약</CardTitle>
@@ -217,46 +246,7 @@ export default function Home() {
               <CardContent>
                 <div>
                <MarketTickerWidget/>
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">KOSPI</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.kospi.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.kospi.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.kospi.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.kospi.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">KOSDAQ</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.kosdaq.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.kosdaq.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.kosdaq.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.kosdaq.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">NASDAQ</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.nasdaq.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.nasdaq.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.nasdaq.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.nasdaq.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">S&P 500</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.sp500.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.sp500.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.sp500.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.sp500.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
+
                 </div>
               </CardContent>
             </Card>
@@ -282,7 +272,7 @@ export default function Home() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">전체</SelectItem>
-              {Array.from(new Set(etfData.map(etf => etf.theme))).map(theme => (
+              {Array.from(new Set(allEtfData.map(etf => etf.theme))).map(theme => (
                   <SelectItem key={theme} value={theme}>
                     {themeNameMap[theme] ?? theme}
                   </SelectItem>
@@ -330,7 +320,6 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
-
         ))}
       </div>
       </div>

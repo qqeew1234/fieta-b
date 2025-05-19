@@ -2,13 +2,14 @@ INSERT INTO etf (id, etf_code, etf_name, company_name, listing_date, theme)
 SELECT id, etf_code, etf_name, company_name, listing_date, theme
 FROM CSVREAD('C:/Users/TJOEUN/Documents/lee/etf/src/main/resources/etf.csv');
 
-INSERT INTO ETF_PROJECTION (etf_code, date, weekly_return, monthly_return)
+INSERT INTO ETF_PROJECTION (etf_code, date, weekly_return, monthly_return,etf_name,theme)
 SELECT
   ETF_CODE,
   DATE,
   CAST(COALESCE(WEEKLY_RETURN, '0') AS DOUBLE),
   CAST(COALESCE(MONTHLY_RETURN, '0') AS DOUBLE)
-FROM CSVREAD('C:/Users/TJOEUN/Documents/lee/etf/src/main/resources/Etf_read_projection.csv', NULL);
+  ,etf_name,theme
+FROM CSVREAD('C:/Users/TJOEUN/Documents/lee/etf/src/main/resources/Etf_read_projection_with_names.csv', NULL);
 
 
 1.로그인 안하고 내프로필 눌렀을때 로그인 화면으로 가게끔 하기

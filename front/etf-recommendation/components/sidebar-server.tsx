@@ -1,5 +1,5 @@
-import SidebarClient from "./sidebar-client"
 import { cookies } from "next/headers"
+import SidebarClient from "@/components/sidebar-client";
 
 export default async function SidebarServer() {
     // 1) 서버에서 쿠키 읽기

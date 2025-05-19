@@ -1,9 +1,15 @@
+"use server"
+
+import { cookies }  from "next/headers"
+import { redirect } from "next/navigation"
+
 export async function login(loginId: string, password: string) {
     const res = await fetch("https://localhost:8443/api/v1/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loginId, password, role: "USER" }),
         credentials: "include"
+
     })
 
     if (!res.ok) {
@@ -15,5 +21,12 @@ export async function login(loginId: string, password: string) {
             message = await res.text()
         }
         throw new Error(message)
-    }    // 성공 시 리다이렉트
+    }
+
+    const data = await res.json()
+    const cookieStore = await cookies()
+    cookieStore.set({ name: "accessToken", value: data.token, httpOnly: true, path: "/" })
+    cookieStore.set("login_id", loginId, { path: "/" })
+
+    redirect("/")               // 성공 시 리다이렉트
 }

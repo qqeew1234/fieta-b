@@ -428,14 +428,14 @@ public class UserRestAssuredTest {
                 .extract()
                 .cookie("accessToken");
 
-        Long userId = userResponse.id();
+        String loginId = userResponse.loginId();
 
         UserDetailResponse detailResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
                 .when()
-                .get("/api/v1/users/{userId}", userId)
+                .get("/api/v1/users/{loginId}", loginId)
                 .then().log().all()
                 .statusCode(200)
                 .extract()

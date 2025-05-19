@@ -23,7 +23,6 @@ export default function LoginPage() {
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
-
     e.preventDefault()
     if (!loginId || !password) {
       setErrorMessage("아이디와 비밀번호를 모두 입력해주세요.")

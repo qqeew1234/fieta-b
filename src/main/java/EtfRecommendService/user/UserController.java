@@ -80,9 +80,9 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<UserDetailResponse> findByUserId(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long userId) {
-        UserDetailResponse userDetailResponse = userService.findByUserId(userDetails.getUsername(), userId);
+    @GetMapping("/users/{loginId}")
+    public ResponseEntity<UserDetailResponse> findByUserId(@AuthenticationPrincipal UserDetails userDetails, @PathVariable String loginId) {
+        UserDetailResponse userDetailResponse = userService.findByUserId(userDetails.getUsername(), loginId);
         return ResponseEntity.ok(userDetailResponse);
     }
 

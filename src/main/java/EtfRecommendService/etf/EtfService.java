@@ -79,14 +79,15 @@ public class EtfService {
     @Transactional
     public SubscribeResponse subscribe(String memberLoginId, Long etfId) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
-
         Etf etf = etfRepository.findById(etfId)
                 .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
 
         //중복 구독 확인
         if (subscribeRepository.existsByUserAndEtfId(user,etfId)){
-            throw new IllegalStateException("이미 구독한 etf");
-        }
+            Subscribe subscribe = subscribeRepository.findByUserAndEtfId(user, etfId)
+                    .orElseThrow(() -> new IllegalArgumentException("구독하지 않은 etf"));
+                subscribeRepository.delete(subscribe);
+            }
 
         Subscribe subscribe = Subscribe.builder()
                 .user(user)

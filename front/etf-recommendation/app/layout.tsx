@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import Sidebar from "@/components/sidebar"
+import SidebarServer from "@/components/sidebar-server";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen">
-            <Sidebar />
+            <SidebarServer />
             <main className="flex-1">{children}</main>
           </div>
         </ThemeProvider>

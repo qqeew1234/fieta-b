@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef } from "react";
+import React, {useState, useRef, useEffect} from "react";
 import { Button } from "@/components/ui/button";
 import {updateProfile,updateProfileImage, changePassword} from "./actions";
 import {Card, CardContent, CardHeader} from "@/components/ui/card"
@@ -18,8 +18,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {Camera, Pencil} from "lucide-react"
+import {Camera, Pencil, Star} from "lucide-react"
 import LogoutButton from "@/components/ui/LogoutButton";
+import {getSubscribedEtfIds} from "@/app/etf/[id]/action";
+import Link from "next/link";
 
 export default function ProfileClient({
                                           initialProfileData,
@@ -42,6 +44,30 @@ export default function ProfileClient({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState("");
+    const [subscribedEtfIds, setSubscribedEtfIds] = useState<number[]>([]); // 구독한 ETF ID 목록
+    const [etfDetails, setEtfDetails] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchSubscribedEtfs = async () => {
+            const subscribedIds = await getSubscribedEtfIds(); // 구독한 ETF ID 목록을 가져옵니다.
+            setSubscribedEtfIds(subscribedIds); // 구독한 ETF ID 목록 상태에 저장
+
+            // 구독한 ETF의 상세 정보를 가져오는 로직 (예: ETF 이름, 티커 등)
+            if (subscribedIds.length > 0) {
+                const etfs = await Promise.all(subscribedIds.map(async (id) => {
+                    const res = await fetch(`https://localhost:8443/api/v1/etfs/${id}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        return { id: data.etfId, name: data.etfName, ticker: data.etfCode };
+                    }
+                    return null;
+                }));
+                setEtfDetails(etfs.filter(etf => etf !== null)); // 유효한 ETF들만 필터링하여 세부 정보 저장
+            }
+        };
+
+        fetchSubscribedEtfs(); // 데이터 로드
+    }, []);
 
     // 프로필 사진 변경 처리
     const handleAvatarClick = () => {
@@ -214,7 +240,31 @@ export default function ProfileClient({
                                 <TabsTrigger value="comments">댓글 목록</TabsTrigger>
                                 <TabsTrigger value="subscribe">구독 내역</TabsTrigger>
                             </TabsList>
-
+                            <TabsContent value="subscribe" className="space-y-4 mt-4">
+                            <div className="mt-4">
+                                <div className="bg-white p-4 rounded-lg shadow-lg">
+                                    {subscribedEtfIds.length === 0 ? (
+                                        <p className="text-gray-600">구독한 ETF가 없습니다.</p>
+                                    ) : (
+                                        <ul className="space-y-4">
+                                            {etfDetails.map((etf, index) => (
+                                                <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded-lg hover:bg-gray-200 transition duration-200">
+                                                    <div>
+                                                        <Link href={`/etf/${etf.id}`} className="text-xl font-semibold text-gray-800">
+                                                            {etf.name}
+                                                            <p className="text-gray-600">{etf.ticker}</p>
+                                                        </Link>
+                                                    </div>
+                                                    <div className="text-yellow-500">
+                                                        <Star className="h-6 w-6" />
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+                            </TabsContent>
                             <TabsContent value="account" className="space-y-4 mt-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="nickname-input">닉네임</Label>

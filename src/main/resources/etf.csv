@@ -1,4 +1,4 @@
-    id,etf_code,etf_name,company_name,listing_date,theme
+id,etf_code,etf_name,company_name,listing_date,theme
 1,459580,KODEX CD금리액티브(합성),삼성자산운용(ETF),20230608,SECTOR
 2,360750,TIGER 미국S&P500,미래에셋자산운용,20200807,SECTOR
 3,069500,KODEX 200,삼성자산운용(ETF),20021014,DIVIDEND
