@@ -1,32 +1,36 @@
-"use server"
+'use server';
 
-import { cookies }  from "next/headers"
-import { redirect } from "next/navigation"
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { login as apiLogin } from '@/lib/api/auth';
 
 export async function login(loginId: string, password: string) {
-    const res = await fetch("https://localhost:8443/api/v1/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loginId, password, role: "USER" }),
-        credentials: "include"
+  const { data, error } = await apiLogin({
+    loginId,
+    password,
+    role: 'USER',
+  });
 
-    })
+  if (error || !data) {
+    throw new Error(error || '로그인 실패');
+  }
 
-    if (!res.ok) {
-        let message = "로그인 실패"
-        try {
-            const errData = await res.json()
-            if (errData?.message) message = errData.message
-        } catch {
-            message = await res.text()
-        }
-        throw new Error(message)
-    }
+  const cookieStore = await cookies();
+  cookieStore.set({
+    name: 'accessToken',
+    value: data.accessToken,
+    httpOnly: true,
+    path: '/',
+  });
+  if (data.refreshToken) {
+    cookieStore.set({
+      name: 'refreshToken',
+      value: data.refreshToken,
+      httpOnly: true,
+      path: '/',
+    });
+  }
+  cookieStore.set('login_id', loginId, { path: '/' });
 
-    const data = await res.json()
-    const cookieStore = await cookies()
-    cookieStore.set({ name: "accessToken", value: data.token, httpOnly: true, path: "/" })
-    cookieStore.set("login_id", loginId, { path: "/" })
-
-    redirect("/")               // 성공 시 리다이렉트
+  redirect('/'); // 성공 시 리다이렉트
 }

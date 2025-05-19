@@ -215,6 +215,39 @@ export function post<T, U>(
     ...config,
     method: 'POST',
     headers,
-    body: JSON.stringify(data),
+    body:
+      typeof data === 'string' || data instanceof FormData
+        ? data
+        : JSON.stringify(data),
+  });
+}
+
+export function patch<T, U>(
+  endpoint: string,
+  data: T,
+  config?: BodyRequestConfig
+): Promise<FetchResult<U>> {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(config?.headers || {}),
+  };
+  return fetchApi<U>(endpoint, {
+    ...config,
+    method: 'PATCH',
+    headers,
+    body:
+      typeof data === 'string' || data instanceof FormData
+        ? data
+        : JSON.stringify(data),
+  });
+}
+
+export function deleteRequest<T>(
+  endpoint: string,
+  config?: ApiRequestConfig
+): Promise<FetchResult<T>> {
+  return fetchApi<T>(endpoint, {
+    ...config,
+    method: 'DELETE',
   });
 }
