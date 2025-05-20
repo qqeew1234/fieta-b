@@ -9,7 +9,7 @@ public record CommentQDto(
         Long id,
         Long etfId,
         Long userId,
-        String nickName,
+        String nickname,
         String content,
         Long likesCount,
         LocalDateTime createdAt

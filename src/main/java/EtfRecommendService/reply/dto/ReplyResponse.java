@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public record ReplyResponse(
         Long id,
         Long userId,
-        String nickName,
+        String nickname,
         String content,
         int likesCount,
         LocalDateTime createdAt

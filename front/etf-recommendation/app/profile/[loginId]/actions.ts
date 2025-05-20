@@ -16,7 +16,7 @@ export async function updateProfile(
 ) {
   try {
     const { data, error } = await updateUserProfile({
-      nickName: nickname,
+      nickname: nickname,
       isLikePrivate: isLikePrivate,
     });
 

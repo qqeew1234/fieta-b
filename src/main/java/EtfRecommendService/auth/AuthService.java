@@ -46,7 +46,7 @@ public class AuthService {
         User user = new User(
                 userRequest.loginId(),
                 password,
-                userRequest.nickName(),
+                userRequest.nickname(),
                 userRequest.isLikePrivate());
 
         userRepository.save(user);
@@ -54,7 +54,7 @@ public class AuthService {
         return new UserResponse(
                 user.getId(),
                 userRequest.loginId(),
-                userRequest.nickName(),
+                userRequest.nickname(),
                 userRequest.isLikePrivate());
     }
 

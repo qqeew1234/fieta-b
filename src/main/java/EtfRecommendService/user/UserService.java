@@ -56,12 +56,12 @@ public class UserService {
         User user = getByLoginId(loginId);
 
         user.updateProfile(
-                updateRequest.nickName(),
+                updateRequest.nickname(),
                 updateRequest.isLikePrivate());
 
         return new UserUpdateResponse(
                 user.getId(),
-                user.getNickName(),
+                user.getNickname(),
                 user.getImageUrl(),
                 user.isLikePrivate());
     }
@@ -142,7 +142,7 @@ public class UserService {
         return new UserDetailResponse(
                 user.getId(),
                 user.getLoginId(),
-                user.getNickName(),
+                user.getNickname(),
                 user.getImageUrl(),
                 user.isLikePrivate(),
                 user.getCreatedAt());

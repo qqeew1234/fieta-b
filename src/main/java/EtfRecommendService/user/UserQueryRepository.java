@@ -46,7 +46,7 @@ public class UserQueryRepository {
                     c.id AS id,
                     c.etf_id AS etfId,
                     c.user_id AS userId,
-                    u.nick_name AS nickName,
+                    u.nick_name AS nickname,
                     c.content AS content,
                     u.image_url AS imageUrl,
                     c.created_at AS createdAt
@@ -60,7 +60,7 @@ public class UserQueryRepository {
                     r.id AS id,
                     c.etf_id AS etfId,
                     r.user_id AS userId,
-                    u.nick_name AS nickName,
+                    u.nick_name AS nickname,
                     r.content AS content,
                     u.image_url AS imageUrl,
                     r.created_at AS createdAt

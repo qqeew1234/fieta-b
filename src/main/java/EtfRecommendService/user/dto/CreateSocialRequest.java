@@ -2,7 +2,7 @@ package EtfRecommendService.user.dto;
 
 public record CreateSocialRequest(
         String email,
-        String nickName,
+        String nickname,
         Boolean isLikePrivate
 ) {
 }

@@ -25,7 +25,7 @@ public class UserUnitTest {
     @BeforeEach
     void setUp() {
         Password password = new Password("현재비밀번호");
-        user = new User("user1",password,"nickName",false);
+        user = new User("user1",password,"nickname",false);
     }
 
     @Test

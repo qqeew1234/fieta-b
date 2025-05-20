@@ -34,7 +34,7 @@ export default function ProfileClient({
 }) {
   // 상태 관리
   const [createdAt] = useState(initialProfileData?.createdAt || '');
-  const [nickname, setNickname] = useState(initialProfileData?.nickName || '');
+  const [nickname, setNickname] = useState(initialProfileData?.nickname || '');
   const [userId, setUserId] = useState(initialProfileData?.loginId || '');
   const [isPublicPortfolio, setIsPublicPortfolio] = useState(
     !initialProfileData?.isLikePrivate
@@ -104,7 +104,7 @@ export default function ProfileClient({
   // 정보 수정 처리
   const handleProfileUpdate = async () => {
     if (
-      nickname === initialProfileData?.nickName &&
+      nickname === initialProfileData?.nickname &&
       isPublicPortfolio === !initialProfileData?.isLikePrivate
     ) {
       setMessage('업데이트할 내용이 없습니다.');
@@ -118,7 +118,7 @@ export default function ProfileClient({
 
       if (result.success && result.data) {
         setMessage('프로필 정보가 업데이트되었습니다.');
-        setNickname(result.data.nickName || '');
+        setNickname(result.data.nickname || '');
         setIsPublicPortfolio(!result.data.isLikePrivate);
       } else {
         setMessage(result.message || '업데이트 실패');

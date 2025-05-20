@@ -53,7 +53,7 @@ public class CommentService {
                         return CommentResponse.builder()
                                 .id(c.comment().getId())
                                 .userId(c.comment().getUser().getId())
-                                .nickName(c.comment().getUser().getNickName())
+                                .nickname(c.comment().getUser().getNickname())
                                 .content(c.comment().getContent())
                                 .likesCount(c.likesCount())
                                 .createdAt(c.comment().getCreatedAt())

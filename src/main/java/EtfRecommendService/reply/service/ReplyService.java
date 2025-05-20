@@ -93,7 +93,7 @@ public class ReplyService {
                     .map(r->ReplyResponse.builder()
                                 .id(r.reply().getId())
                                 .userId(r.reply().getUser().getId())
-                                .nickName(r.reply().getUser().getNickName())
+                                .nickname(r.reply().getUser().getNickname())
                                 .content(r.reply().getContent())
                                 .likesCount(r.likesCount())
                                 .createdAt(r.reply().getCreatedAt())

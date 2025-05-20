@@ -35,7 +35,7 @@ public class User extends BaseEntity {
     private Password password;
 
     @Column(nullable = false, unique = true)
-    private String nickName;
+    private String nickname;
 
     @OneToMany(mappedBy = "user")
     private List<Reply> replyList = new ArrayList<>();
@@ -76,12 +76,12 @@ public class User extends BaseEntity {
 
     public User(String loginId,
                 Password password,
-                String nickName,
+                String nickname,
                 Boolean isLikePrivate
                 ) {
         this.loginId = loginId;
         this.password = password;
-        this.nickName = nickName;
+        this.nickname = nickname;
         this.isLikePrivate = isLikePrivate;
     }
 
@@ -89,9 +89,9 @@ public class User extends BaseEntity {
         this.isDeleted = true;
     }
 
-    public void updateProfile(String nickName, Boolean isLikePrivate) {
-        if (nickName != null) {
-            this.nickName = nickName;
+    public void updateProfile(String nickname, Boolean isLikePrivate) {
+        if (nickname != null) {
+            this.nickname = nickname;
         }
         if (isLikePrivate != null) {
             this.isLikePrivate = isLikePrivate;

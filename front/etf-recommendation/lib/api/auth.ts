@@ -21,7 +21,7 @@ export interface LoginResponse {
 export interface UserResponse {
   id: number;
   loginId: string;
-  nickName: string;
+  nickname: string;
   imageUrl: string;
   isLikePrivate: boolean;
 }
@@ -29,7 +29,7 @@ export interface UserResponse {
 export interface UserDetailResponse {
   id: number;
   loginId: string;
-  nickName: string;
+  nickname: string;
   imageUrl: string;
   isLikePrivate: boolean;
   createdAt: string;

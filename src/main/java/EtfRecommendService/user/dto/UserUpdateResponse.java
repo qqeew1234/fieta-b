@@ -1,4 +1,4 @@
 package EtfRecommendService.user.dto;
 
-public record UserUpdateResponse(Long id, String nickName, String imageUrl, Boolean isLikePrivate) {
+public record UserUpdateResponse(Long id, String nickname, String imageUrl, Boolean isLikePrivate) {
 }

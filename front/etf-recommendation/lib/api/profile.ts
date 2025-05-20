@@ -1,13 +1,13 @@
 import { FetchResult, post, get, patch } from '../http/client';
 
 export interface ProfileUpdateRequest {
-  nickName: string;
+  nickname: string;
   isLikePrivate: boolean;
 }
 
 export interface ProfileResponse {
   id: number;
-  nickName: string;
+  nickname: string;
   isLikePrivate: boolean;
   profileImageUrl?: string;
   loginId: string;

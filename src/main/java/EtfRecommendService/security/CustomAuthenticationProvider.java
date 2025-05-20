@@ -19,7 +19,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String identifier = authentication.getName(); // "role:nickName"
+        String identifier = authentication.getName(); // "role:nickname"
         String password = authentication.getCredentials().toString();
 
         UserDetails userDetail = customUserDetailService.loadUserByUsername(identifier);

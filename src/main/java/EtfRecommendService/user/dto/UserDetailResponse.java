@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public record UserDetailResponse(
         Long id,
         String loginId,
-        String nickName,
+        String nickname,
         String imageUrl,
         Boolean isLikePrivate,
         LocalDateTime createdAt
