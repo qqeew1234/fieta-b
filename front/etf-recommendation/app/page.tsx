@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/select';
 import EtfCard, { ETF } from '@/components/EtfCard';
 import MarketTickerWidget from '@/components/MarketTickerWidget';
-import { fetchAllEtfs, fetchEtfsPage } from '@/lib/api/etf';
+import { fetchEtfs } from '@/lib/api/etf';
 
 // 시장 요약 데이터
 const marketSummary = {
@@ -80,7 +80,10 @@ export default function Home() {
   useEffect(() => {
     const fetchAllEtfsData = async () => {
       try {
-        const { data, error } = await fetchAllEtfs('weekly');
+        const { data, error } = await fetchEtfs({
+          size: 10000,
+          period: 'weekly',
+        });
 
         if (error || !data) {
           console.error('전체 ETF 로딩 실패', error);
@@ -115,7 +118,11 @@ export default function Home() {
   useEffect(() => {
     const fetchEtfPageData = async () => {
       try {
-        const { data, error } = await fetchEtfsPage(page, 20, 'weekly');
+        const { data, error } = await fetchEtfs({
+          page,
+          size: 20,
+          period: 'weekly',
+        });
 
         if (error || !data) {
           console.error('ETF 페이지 로딩 실패', error);
