@@ -62,7 +62,7 @@ public class SpringSecurityConfig {
                                 .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
                                 .requestMatchers("/api/v1/comments/**").authenticated()
                                 .requestMatchers("/api/v1/etfs/**").permitAll()
-                                .requestMatchers("/api/v1/news/**").permitAll()
+                                .requestMatchers("/api/v1/articles/**").permitAll()
                                 .requestMatchers("/api/v1/notifications/**").permitAll()
                                 .requestMatchers("/api/v1/replies/**").authenticated()
                                 .requestMatchers("/api/v1/reports/**").authenticated()

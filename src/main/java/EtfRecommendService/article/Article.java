@@ -1,27 +1,30 @@
-package EtfRecommendService.news;
+package EtfRecommendService.article;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
+import java.time.LocalDateTime;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class News {
+public class Article extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
 
-    private String link;
+    private String sourceUrl;
 
-    @JsonProperty("img_url")
-    private String imageUrl;
+    private String thumbnailUrl;
+
+    private LocalDateTime publishedAt;
 }
