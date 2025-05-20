@@ -178,7 +178,11 @@ export function addQueryParams(
   url: string,
   params: Record<string, any>
 ): string {
-  const urlObj = new URL(url);
+  const isRelativePath = !url.match(/^https?:\/\//);
+
+  const urlObj = isRelativePath
+    ? new URL(url, 'http://dummy.com')
+    : new URL(url);
 
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
@@ -190,7 +194,9 @@ export function addQueryParams(
     }
   });
 
-  return urlObj.toString();
+  return isRelativePath
+    ? `${urlObj.pathname}${urlObj.search}`
+    : urlObj.toString();
 }
 
 export function httpGet<T>(
