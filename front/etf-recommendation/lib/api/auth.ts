@@ -1,4 +1,4 @@
-import { FetchResult, post, get } from '../http/client';
+import { FetchResult, httpPost, httpGet } from '../http/client';
 
 export interface LoginRequest {
   loginId: string;
@@ -45,7 +45,7 @@ export interface RefreshTokenResponse {
 export async function login(
   credentials: LoginRequest
 ): Promise<FetchResult<LoginResponse>> {
-  return post('/api/v1/login', credentials, {
+  return httpPost('/api/v1/login', credentials, {
     errorMessage: '로그인에 실패했습니다',
   });
 }
@@ -56,7 +56,7 @@ export async function login(
 export async function register(
   userData: RegisterRequest
 ): Promise<FetchResult<UserResponse>> {
-  return post('/api/v1/join', userData, {
+  return httpPost('/api/v1/join', userData, {
     errorMessage: '회원가입에 실패했습니다',
   });
 }
@@ -68,7 +68,7 @@ export async function fetchUserProfile(
   loginId: string,
   accessToken?: string
 ): Promise<FetchResult<UserDetailResponse>> {
-  return get(`/api/v1/users/${loginId}`, {
+  return httpGet(`/api/v1/users/${loginId}`, {
     errorMessage: '사용자 정보를 불러오는 데 실패했습니다',
     authToken: accessToken,
   });
@@ -80,7 +80,7 @@ export async function fetchUserProfile(
 export async function refreshToken(): Promise<
   FetchResult<RefreshTokenResponse>
 > {
-  return post(
+  return httpPost(
     '/api/v1/refresh',
     {},
     {

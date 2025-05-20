@@ -1,4 +1,4 @@
-import { FetchResult, get } from '../http/client';
+import { FetchResult, httpGet } from '../http/client';
 
 export interface EtfResponse {
   totalPage: number;
@@ -30,7 +30,7 @@ export interface EtfDetailResponse {
 export async function fetchAllEtfs(
   period: string = 'weekly'
 ): Promise<FetchResult<EtfResponse>> {
-  return get('/api/v1/etfs', {
+  return httpGet('/api/v1/etfs', {
     params: { page: 1, size: 10000, period },
     errorMessage: 'ETF 데이터를 불러오는 데 실패했습니다',
   });
@@ -44,7 +44,7 @@ export async function fetchEtfsPage(
   size: number = 20,
   period: string = 'weekly'
 ): Promise<FetchResult<EtfResponse>> {
-  return get('/api/v1/etfs', {
+  return httpGet('/api/v1/etfs', {
     params: { page, size, period },
     errorMessage: 'ETF 페이지 데이터를 불러오는 데 실패했습니다',
   });
@@ -56,7 +56,7 @@ export async function fetchEtfsPage(
 export async function fetchEtfDetail(
   etfId: number
 ): Promise<FetchResult<EtfDetailResponse>> {
-  return get(`/api/v1/etfs/${etfId}`, {
+  return httpGet(`/api/v1/etfs/${etfId}`, {
     errorMessage: 'ETF 상세 정보를 불러오는 데 실패했습니다',
   });
 }

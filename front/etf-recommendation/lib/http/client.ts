@@ -193,7 +193,7 @@ export function addQueryParams(
   return urlObj.toString();
 }
 
-export function get<T>(
+export function httpGet<T>(
   endpoint: string,
   config?: ApiRequestConfig & { params?: Record<string, any> }
 ): Promise<FetchResult<T>> {
@@ -206,7 +206,7 @@ export function get<T>(
   return fetchApi<T>(endpoint, { ...restConfig, method: 'GET' });
 }
 
-export function post<T, U>(
+export function httpPost<T, U>(
   endpoint: string,
   data: T,
   config?: BodyRequestConfig
@@ -227,7 +227,7 @@ export function post<T, U>(
   });
 }
 
-export function patch<T, U>(
+export function httpPatch<T, U>(
   endpoint: string,
   data: T,
   config?: BodyRequestConfig
@@ -248,7 +248,7 @@ export function patch<T, U>(
   });
 }
 
-export function deleteRequest<T>(
+export function httpDelete<T>(
   endpoint: string,
   config?: ApiRequestConfig
 ): Promise<FetchResult<T>> {
