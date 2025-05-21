@@ -23,6 +23,22 @@ export interface ApiResponse {
   etfs: EtfDetail[];
 }
 
+export async function aiChat(prompt: string): Promise<FetchResult<string>> {
+  const res = await httpPost('/api/v1/chat', prompt, {
+    errorMessage: '채팅 전송에 실패했습니다.',
+  });
+
+  let answer = '';
+
+  if (res.data && typeof res.data === 'object') {
+    answer = Object.values(res.data)[0] as string;
+  } else if (typeof res.data === 'string') {
+    answer = res.data;
+  }
+
+  return { ...res, data: answer };
+}
+
 export async function aiRecommend(
   userAnswerList: userAnswer[]
 ): Promise<FetchResult<ApiResponse>> {
