@@ -26,12 +26,12 @@ public class ReplyRepositoryCustom {
     private final QComment qComment = QComment.comment;
     private final QUser qUser = QUser.user;
 
-    public SortedRepliesQDto findAllByCommentIdOrderByLikes(Pageable pageable, Long commentId) {
+    public SortedRepliesQDto findAllByCommentIdAndIsDeletedFalseOrderByLikes(Pageable pageable, Long commentId) {
         //전체 데이터 개수
         long totalElements = Optional.ofNullable(queryFactory
-                .select(qReply.comment.count())
+                .select(qReply.count())
                 .from(qReply)
-                .where(qReply.comment.id.eq(commentId))
+                .where(qReply.comment.id.eq(commentId).and(qReply.isDeleted.isFalse()))
                 .fetchOne()).orElse(0L);
 
         //해당 ETF 에 달린 댓글과 좋아요 개수
@@ -45,7 +45,7 @@ public class ReplyRepositoryCustom {
                 .join(qReply.comment, qComment)
                 .join(qReply.user, qUser)
                 .leftJoin(qReply.replyLikeList, qReplyLike)
-                .where(qReply.comment.id.eq(commentId))
+                .where(qReply.comment.id.eq(commentId).and(qReply.isDeleted.isFalse()))
                 .groupBy(qReply.id);
 
         //정렬기준이 내림차순인지 오름차순인지 확인

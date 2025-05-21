@@ -10,5 +10,7 @@ import java.util.Optional;
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
     Optional<Reply> findFirstByUserIdAndCommentIdOrderByCreatedAtDesc(Long userId, Long commentId);
 
-    Page<Reply> findAllByCommentId(Long commentId, Pageable pageable);
+    Page<Reply> findAllByCommentIdAndIsDeletedIsFalse(Long commentId, Pageable pageable);
+
+    Optional<Reply> findByIdAndIsDeletedIsFalse(Long replyId);
 }

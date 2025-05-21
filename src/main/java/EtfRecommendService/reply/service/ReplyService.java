@@ -86,7 +86,7 @@ public class ReplyService {
         List<ReplyResponse> replyResponseList;
 
         if (sortOrderName.equals("likes")){
-            SortedRepliesQDto sortedRepliesQDto = replyRepositoryCustom.findAllByCommentIdOrderByLikes(pageable, commentId);
+            SortedRepliesQDto sortedRepliesQDto = replyRepositoryCustom.findAllByCommentIdAndIsDeletedFalseOrderByLikes(pageable, commentId);
             List<ReplyAndLikesCountQDto> replyAndLikesCountQDtoList = sortedRepliesQDto.replyAndLikesCountQDtoList();
 
             replyResponseList = replyAndLikesCountQDtoList.stream()
@@ -110,7 +110,7 @@ public class ReplyService {
                     .build();
         }
         else {
-            Page<Reply> replyPage = replyRepository.findAllByCommentId(commentId, pageable);
+            Page<Reply> replyPage = replyRepository.findAllByCommentIdAndIsDeletedIsFalse(commentId, pageable);
             List<Reply> replyList = replyPage.getContent();
             replyResponseList = replyList.stream().map(
                             r-> ReplyResponse
@@ -137,7 +137,7 @@ public class ReplyService {
     @Transactional
     public void update(String loginId, Long replyId, ReplyRequest rq) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
-        Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
+        Reply reply = replyRepository.findByIdAndIsDeletedIsFalse(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
 
         if (reply.isWrittenBy(user)){
             reply.update(rq.content());
@@ -148,14 +148,14 @@ public class ReplyService {
     @Transactional
     public void delete(String loginId, Long replyId) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
-        Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
+        Reply reply = replyRepository.findByIdAndIsDeletedIsFalse(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
         reply.validateUserPermission(user);
         reply.softDelete(user);
     }
 
     @Transactional
     public void toggleLike(String loginId, Long replyId) {
-        Reply reply = replyRepository.findById(replyId)
+        Reply reply = replyRepository.findByIdAndIsDeletedIsFalse(replyId)
                 .orElseThrow(() -> new EntityNotFoundException("Reply not found"));
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
