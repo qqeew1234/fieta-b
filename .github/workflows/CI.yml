@@ -7,10 +7,11 @@ on:
     branches: [ main ]
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  JWT_SECRET: ${{secrets.JWT_SECRET}}
+  JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
+  SPRING_PROFILES_ACTIVE: test
 
 jobs:
   test:
