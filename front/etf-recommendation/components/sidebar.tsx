@@ -158,7 +158,16 @@ export default function Sidebar() {
                 className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800"
               >
                 <User className="h-5 w-5" />
-                <span>내 프로필</span>
+                <span>내 프로필aaaa</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link href="/my-etf"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800"
+              >
+                <Star className="h-5 w-5" />
+                <span>나만의 ETF 추천</span>
               </Link>
             </li>
           </ul>

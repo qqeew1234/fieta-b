@@ -116,6 +116,15 @@ export default function SidebarClient({ loginId }: SidebarClientProps) {
                 <span>내 프로필</span>
               </Link>
             </li>
+
+            <li>
+              <Link href="/my-etf"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800"
+              >
+                <Star className="h-5 w-5" />
+                <span>나만의 ETF 추천</span>
+              </Link>
+            </li>
           </ul>
         </nav>
 

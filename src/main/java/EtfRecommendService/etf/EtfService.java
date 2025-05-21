@@ -1,6 +1,7 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.etf.domain.EtfProjection;
 import EtfRecommendService.etf.domain.Subscribe;
 import EtfRecommendService.etf.dto.*;
 import EtfRecommendService.user.User;
@@ -142,5 +143,19 @@ public class EtfService {
         subscribeRepository.delete(subscribe);
 
         return new SubscribeDeleteResponse(etfId);
+    }
+
+
+    public EtfReadResponse findTopByThemeOrderByWeeklyReturn(Theme theme) {
+        EtfProjection etfProjection = etfQueryRepository.findTopByThemeOrderByWeeklyReturn(theme);
+        if (etfProjection == null) {
+            throw new IllegalArgumentException("No ETF found for the given theme: " + theme);
+        }
+        return EtfReadResponse.builder()
+                .etfId(etfProjection.getId())
+                .etfName(etfProjection.getEtfName())
+                .weeklyReturn(etfProjection.getWeeklyReturn())
+                .etfCode(etfProjection.getEtfCode())
+                .build();
     }
 }
