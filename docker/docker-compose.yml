@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:15
+    container_name: etf-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: etfDB
+      POSTGRES_USER: etf
+      POSTGRES_PASSWORD: etf
+      TZ: Asia/Seoul
+    volumes:
+      - ./db/postgres/data:/var/lib/postgresql/data
+      - ./db/postgres/init:/docker-entrypoint-initdb.d
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=100"
+      - "-c"
+      - "client_encoding=UTF8"
