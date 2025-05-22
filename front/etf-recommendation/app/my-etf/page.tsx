@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button'; // Button 컴포넌트 임포트
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -13,6 +13,7 @@ const EtfSurvey = () => {
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const [recommendationResult, setRecommendationResult] =
     useState<ApiResponse | null>(null);
+  const [isAutoMove, setIsAutoMove] = useState(false);
 
   const questions = {
     1: {
@@ -127,16 +128,17 @@ const EtfSurvey = () => {
     }));
   };
 
-  const handleAnswerChange = (questionNumber: number, answer: string) => {
-    setAnswers({ ...answers, [questionNumber]: answer });
-  };
-
   const handleNextQuestion = () => {
     if (!answers[currentQuestion]) {
       alert('답변을 선택해주세요!');
       return;
     }
     setCurrentQuestion(currentQuestion + 1);
+  };
+
+  const handleAnswerChange = (questionNumber: number, answer: string) => {
+    setAnswers({ ...answers, [questionNumber]: answer });
+    setIsAutoMove(true);
   };
 
   const handlePreviousQuestion = () => {
@@ -155,10 +157,25 @@ const EtfSurvey = () => {
     const { data, error } = await aiRecommend(userAnswers);
     setRecommendationResult(data);
     if (error || !data) {
-      alert('회원가입 실패: ' + (error || '알 수 없는 오류'));
+      alert('추천 실패: ' + (error || '알 수 없는 오류'));
       return;
     }
   };
+
+  useEffect(() => {
+    // 이전 질문에서 답변을 바꾼 경우(뒤로 갔다가 답변 수정)
+    if (
+      isAutoMove &&
+      answers[currentQuestion] &&
+      currentQuestion < Object.keys(questions).length
+    ) {
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion + 1);
+        setIsAutoMove(false);
+      }, 150);
+      return;
+    }
+  }, [answers[currentQuestion]]);
 
   const currentQuestionData =
     questions[currentQuestion as keyof typeof questions];
@@ -298,7 +315,9 @@ const EtfSurvey = () => {
               다음
             </Button>
           ) : (
-            <Button onClick={handleSubmit}>제출</Button>
+            <Button onClick={handleSubmit} disabled={!answers[currentQuestion]}>
+              제출
+            </Button>
           )}
         </div>
       </div>

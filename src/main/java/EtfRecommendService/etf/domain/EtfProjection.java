@@ -26,8 +26,10 @@ public class EtfProjection {
     @Enumerated(EnumType.STRING)
     private Theme theme;
 
+    @Column(nullable = true)
     private double weeklyReturn;
 
+    @Column(nullable = true)
     private double monthlyReturn;
 
     private LocalDate date;
