@@ -9,10 +9,10 @@ import FloatingChatbot from '@/components/aichatbot';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: '폭삭 벌었수다 - ETF 추천 서비스',
-  description: '수익률 높은 ETF 추천 서비스',
-  generator: 'v0.dev',
-};
+  title: "FIETA - AI ETF 추천 서비스",
+  description: "수익률 높은 ETF 추천 서비스",
+    generator: 'v0.dev'
+}
 
 export default function RootLayout({
   children,

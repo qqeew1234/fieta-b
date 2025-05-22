@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EtfService {
@@ -30,42 +31,61 @@ public class EtfService {
         this.etfQueryRepository = etfQueryRepository;
     }
 
-//    @Cacheable(
-//            cacheNames = "etfPages",
-//            key = "T(java.lang.String).format(" +
-//                    "'%d-%d-%s-%s-%s-%s', " +
-//                    "#pageable.pageNumber, " +
-//                    "#pageable.pageSize, " +
-//                    "(#pageable.sort == null ? '' : #pageable.sort.toString()), " +
-//                    "(#theme != null ? #theme.name() : ''), " +
-//                    "#keyword, " +
-//                    "#period" +
-//                    ")"
-//    )
-    public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, String period) {
+    //페이징 있는 전체 etf 조회. 기본값은 주간 수익률 반환.
+    public EtfResponse readAll(
+            Theme theme,
+            String keyword,
+            Pageable pageable,
+            String period
+    ) {
         long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
-        int totalPage = (int) Math.ceil((double) totalCount / pageable.getPageSize());
-        int currentPage = pageable.getPageNumber() + 1;
         int pageSize = pageable.getPageSize();
+        int currentPage = pageable.getPageNumber() + 1; // 0-based index이므로 +1
+        int totalPage = (int) Math.ceil((double) totalCount / pageSize);
 
-        List<EtfReturnDto> etfReturnDtos = etfQueryRepository
-                .findEtfsByPeriod(theme, keyword, pageable, period)
-                .stream()
-                .map(dto -> new EtfReturnDto(
-                        dto.etfId(),
-                        dto.etfName(),
-                        dto.etfCode(),
-                        dto.theme(),
-                        dto.returnRate()
+        List<EtfProjection> etfs = etfQueryRepository.findEtfsByPeriod(theme, keyword, pageable);
+
+        List<EtfReturnDto> dtoList = etfs.stream()
+                .map(etf -> new EtfReturnDto(
+                        etf.getId(),
+                        etf.getEtfName(),
+                        etf.getEtfCode(),
+                        etf.getTheme(),
+                        "monthly".equalsIgnoreCase(period)
+                                ? etf.getMonthlyReturn()
+                                : etf.getWeeklyReturn()
                 ))
-                .toList();
+                .collect(Collectors.toList());
 
-        return new EtfResponse(totalPage, totalCount, currentPage, pageSize, etfReturnDtos);
+        return new EtfResponse(
+                totalPage,
+                totalCount,
+                currentPage,
+                pageSize,
+                dtoList
+        );
+    }
+
+    //페이징 없는 전체 조회용. 주간 수익률 반환.
+    public EtfAllResponse searchAll(Theme theme, String keyword) {
+        long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
+        List<EtfProjection> etfProjections = etfQueryRepository.findEtfsByKeyword(theme, keyword);
+
+        List<EtfReturnDto> etfReturnDtos = etfProjections.stream()
+                .map(etf -> new EtfReturnDto(
+                        etf.getId(),
+                        etf.getEtfName(),
+                        etf.getEtfCode(),
+                        etf.getTheme(),
+                        etf.getWeeklyReturn()))
+                .collect(Collectors.toList());
+
+        return new EtfAllResponse(totalCount, etfReturnDtos);
     }
 
     public EtfDetailResponse findById(Long etfId) {
         Etf etf = etfRepository.findById(etfId)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 etf"));
 
         return new EtfDetailResponse(
                 etf.getId(),
@@ -81,14 +101,14 @@ public class EtfService {
     public SubscribeResponse subscribe(String memberLoginId, Long etfId) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
         Etf etf = etfRepository.findById(etfId)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 etf"));
 
         //중복 구독 확인
-        if (subscribeRepository.existsByUserAndEtfId(user,etfId)){
+        if (subscribeRepository.existsByUserAndEtfId(user, etfId)) {
             Subscribe subscribe = subscribeRepository.findByUserAndEtfId(user, etfId)
                     .orElseThrow(() -> new IllegalArgumentException("구독하지 않은 etf"));
-                subscribeRepository.delete(subscribe);
-            }
+            subscribeRepository.delete(subscribe);
+        }
 
         Subscribe subscribe = Subscribe.builder()
                 .user(user)
@@ -98,7 +118,7 @@ public class EtfService {
                 .build();
         subscribeRepository.save(subscribe);
 
-        return new  SubscribeResponse(
+        return new SubscribeResponse(
                 subscribe.getId(),
                 etf.getId(),
                 subscribe.getStartTime(),
@@ -124,7 +144,7 @@ public class EtfService {
         return new SubscribeListResponse(
                 subscribePage.getTotalPages(),
                 subscribePage.getTotalElements(),
-                subscribePage.getNumber()+1,
+                subscribePage.getNumber() + 1,
                 subscribePage.getSize(),
                 subscribeDTOs
         );
@@ -138,7 +158,7 @@ public class EtfService {
 
         //유저가 해당 etf 구독하고 있는지 확인
         Subscribe subscribe = subscribeRepository.findByUserAndEtfId(user, etfId)
-                .orElseThrow(()-> new IllegalArgumentException("구독하지 않은 etf"));
+                .orElseThrow(() -> new IllegalArgumentException("구독하지 않은 etf"));
 
         subscribeRepository.delete(subscribe);
 

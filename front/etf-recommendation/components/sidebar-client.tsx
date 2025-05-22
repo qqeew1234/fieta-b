@@ -55,8 +55,8 @@ export default function SidebarClient({ loginId }: SidebarClientProps) {
         )}
       >
         <div className="p-4 border-b border-slate-700">
-          <h1 className="text-xl font-bold">폭삭 벌었수다</h1>
-          <p className="text-sm text-slate-400">ETF 추천 서비스</p>
+          <h1 className="text-xl font-bold">FIETA</h1>
+          <p className="text-sm text-slate-400">AI ETF 추천 서비스</p>
         </div>
 
         <nav className="flex-1 p-4">

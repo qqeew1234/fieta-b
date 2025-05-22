@@ -1,94 +1,102 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.TestConfig;
+import EtfRecommendService.etf.domain.Etf;
 import EtfRecommendService.etf.domain.EtfProjection;
+import EtfRecommendService.etf.dto.EtfResponse;
 import EtfRecommendService.etf.dto.EtfReturnDto;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Constructor;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@Import(TestConfig.class)
+@SpringBootTest
+@Transactional
 public class EtfQueryRepositoryTest {
-
-    @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private JPAQueryFactory queryFactory;
-
-    private EtfQueryRepository repository;
 
     @Autowired
     private EntityManager em;
 
     @Autowired
-    private JPAQueryFactory jpaQueryFactory;
+    private EtfService etfService;
 
+    @Autowired
     private EtfQueryRepository etfQueryRepository;
 
     @BeforeEach
     void setUp() {
-        repository = new EtfQueryRepository(queryFactory);
         loadTestData();
     }
 
     @Transactional
     void loadTestData() {
-        persistEtf("삼성전자 ETF", "005930", Theme.AI_DATA, 1.5, 3.2);
-        persistEtf("SK하이닉스 ETF", "000660", Theme.AI_DATA, 2.1, 4.5);
-        persistEtf("현대차 ETF", "005380", Theme.GOLD, -0.5, 1.8);
-        persistEtf("기아차 ETF", "000270", Theme.GOLD, 0.8, 2.3);
-        persistEtf("KB금융 ETF", "105560", Theme.COMMODITIES, 1.1, 2.2);
+        persistEtf("삼성전자 ETF", "005930", "Test Company", LocalDateTime.of(2000, 6, 15, 10, 0), Theme.AI_DATA);
+        persistEtfProjection("삼성전자 ETF", "005930", Theme.AI_DATA, 1.2, 3.4, LocalDate.of(2025, 5, 1));
+
+        persistEtf("SK하이닉스 ETF", "000660", "Test Company", LocalDateTime.of(2002, 3, 20, 12, 0), Theme.AI_DATA);
+        persistEtfProjection("SK하이닉스 ETF", "000660", Theme.AI_DATA, 1.0, 2.8, LocalDate.of(2025, 5, 1));
+
+        persistEtf("현대차 ETF", "005380", "Test Company", LocalDateTime.of(2005, 9, 10, 14, 0), Theme.GOLD);
+        persistEtfProjection("현대차 ETF", "005380", Theme.GOLD, 0.9, 2.1, LocalDate.of(2025, 5, 1));
+
+        persistEtf("기아차 ETF", "000270", "Test Company", LocalDateTime.of(2008, 12, 5, 16, 0), Theme.GOLD);
+        persistEtfProjection("기아차 ETF", "000270", Theme.GOLD, 1.1, 2.5, LocalDate.of(2025, 5, 1));
+
+        persistEtf("KB금융 ETF", "105560", "Test Company", LocalDateTime.of(2010, 7, 25, 9, 0), Theme.COMMODITIES);
+        persistEtfProjection("KB금융 ETF", "105560", Theme.COMMODITIES, 0.7, 1.9, LocalDate.of(2025, 5, 1));
+
         em.flush();
         em.clear();
     }
 
-    private void persistEtf(String name,
-                            String code,
-                            Theme theme,
-                            double weekly,
-                            double monthly) {
-        try {
-            Constructor<EtfProjection> ctor = EtfProjection.class.getDeclaredConstructor();
-            ctor.setAccessible(true);
+    private void persistEtf(String etfName, String etfCode, String companyName, LocalDateTime listingDate, Theme theme) {
+        Etf etf = Etf.builder()
+                .etfName(etfName)
+                .etfCode(etfCode)
+                .companyName(companyName)
+                .listingDate(listingDate)
+                .theme(theme)
+                .build();
 
-            EtfProjection etf = ctor.newInstance();
-
-            ReflectionTestUtils.setField(etf, "etfName", name);
-            ReflectionTestUtils.setField(etf, "etfCode", code);
-            ReflectionTestUtils.setField(etf, "theme", theme);
-            ReflectionTestUtils.setField(etf, "weeklyReturn", weekly);
-            ReflectionTestUtils.setField(etf, "monthlyReturn", monthly);
-
-            em.persist(etf);
-
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("테스트용 EtfReadProjection 생성 실패", ex);
-        }
+        em.persist(etf);
     }
+
+    private void persistEtfProjection(String etfName, String etfCode, Theme theme,
+                                      double weeklyReturn, double monthlyReturn, LocalDate date) {
+        EtfProjection projection = new EtfProjection(
+                null,          // ID는 자동 생성
+                etfName,
+                etfCode,
+                theme,
+                weeklyReturn,
+                monthlyReturn,
+                date
+        );
+        em.persist(projection);
+    }
+
 
     @Test
     @DisplayName("조건 없이 모든 주간 ETF 조회")
     void findAllWeeklyWithoutFilter() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<EtfReturnDto> list = repository.findEtfsByPeriod(null, null, pageable, "weekly");
+        EtfResponse response = etfService.readAll(null, null, pageable, "weekly");
 
-        assertThat(list).hasSize(5)
+        assertThat(response).isNotNull();
+        assertThat(response.etfReadResponseList()).hasSize(5)
                 .extracting("etfName")
                 .containsExactlyInAnyOrder(
                         "삼성전자 ETF",
@@ -97,53 +105,56 @@ public class EtfQueryRepositoryTest {
                         "기아차 ETF",
                         "KB금융 ETF"
                 );
+        assertThat(response.totalCount()).isEqualTo(5);
+        assertThat(response.totalPage()).isEqualTo(1);
+        assertThat(response.currentPage()).isEqualTo(1);
+        assertThat(response.pageSize()).isEqualTo(10);
     }
 
     @Test
     @DisplayName("조건 없이 모든 월간 ETF 조회")
     void findAllMonthlyWithoutFilter() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<EtfReturnDto> list = repository.findEtfsByPeriod(null, null, pageable, "monthly");
+        EtfResponse response = etfService.readAll(null, null, pageable, "monthly");
 
-        assertThat(list).hasSize(5)
+        assertThat(response.etfReadResponseList()).hasSize(5)
                 .extracting("etfCode")
                 .containsExactlyInAnyOrder(
                         "005930", "000660", "005380", "000270", "105560"
                 );
+        assertThat(response.totalCount()).isEqualTo(5);
     }
 
     @Test
     @DisplayName("주간 ETF 데이터를 테마별로 조회 가능")
     void findWeeklyEtfsByTheme() {
         Pageable pageable = PageRequest.of(0, 10);
+        EtfResponse response = etfService.readAll(Theme.AI_DATA, null, pageable, "weekly");
 
-        List<EtfReturnDto> itList =
-                repository.findEtfsByPeriod(Theme.AI_DATA, null, pageable, "monthly");
-
-        assertThat(itList).hasSize(2)
+        assertThat(response.etfReadResponseList()).hasSize(2)
                 .extracting("theme").containsOnly(Theme.AI_DATA);
-        assertThat(itList).extracting("etfName")
+        assertThat(response.etfReadResponseList()).extracting("etfName")
                 .containsExactlyInAnyOrder("삼성전자 ETF", "SK하이닉스 ETF");
+        assertThat(response.totalCount()).isEqualTo(2);
     }
 
     @Test
     @DisplayName("월간 ETF 데이터를 키워드로 검색 가능")
     void findMonthlyEtfsByKeyword() {
         Pageable pageable = PageRequest.of(0, 10);
+        EtfResponse response = etfService.readAll(null, "기아", pageable, "monthly");
 
-        List<EtfReturnDto> result =
-                repository.findEtfsByPeriod(null, "기아", pageable, "monthly");
-
-        assertThat(result).hasSize(1)
+        assertThat(response.etfReadResponseList()).hasSize(1)
                 .extracting("etfCode").containsOnly("000270");
+        assertThat(response.totalCount()).isEqualTo(1);
     }
 
     @Test
     @DisplayName("전체 개수를 정확히 가져옴")
     void fetchTotalCount() {
-        long total = repository.fetchTotalCount(null, null);
-        long itCnt = repository.fetchTotalCount(Theme.AI_DATA, null);
-        long kiaCnt = repository.fetchTotalCount(null, "기아");
+        long total = etfQueryRepository.fetchTotalCount(null, null);
+        long itCnt = etfQueryRepository.fetchTotalCount(Theme.AI_DATA, null);
+        long kiaCnt = etfQueryRepository.fetchTotalCount(null, "기아");
 
         assertThat(total).isEqualTo(5);
         assertThat(itCnt).isEqualTo(2);
@@ -156,38 +167,41 @@ public class EtfQueryRepositoryTest {
         Pageable p1 = PageRequest.of(0, 2);
         Pageable p2 = PageRequest.of(1, 2);
 
-        List<EtfReturnDto> first = repository.findEtfsByPeriod(null, null, p1, "monthly");
-        List<EtfReturnDto> second = repository.findEtfsByPeriod(null, null, p2, "monthly");
+        EtfResponse first = etfService.readAll(null, null, p1, "monthly");
+        EtfResponse second = etfService.readAll(null, null, p2, "monthly");
 
-        assertThat(first).hasSize(2);
-        assertThat(second).hasSize(2);
-        // 첫 페이지와 둘째 페이지는 겹치지 않는다
-        assertThat(first).extracting("etfCode")
+        assertThat(first.etfReadResponseList()).hasSize(2);
+        assertThat(second.etfReadResponseList()).hasSize(2);
+        assertThat(first.etfReadResponseList()).extracting("etfCode")
                 .doesNotContainAnyElementsOf(
-                        second.stream()
+                        second.etfReadResponseList().stream()
                                 .map(EtfReturnDto::etfCode)
                                 .toList()
                 );
+        assertThat(first.totalCount()).isEqualTo(5);
+        assertThat(second.totalCount()).isEqualTo(5);
     }
 
     @Test
     @DisplayName("키워드로 주간 ETF 검색")
     void testFindWeeklyByKeyword() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<EtfReturnDto> result = repository.findEtfsByPeriod(null, "현대차", pageable, "weekly");
+        EtfResponse response = etfService.readAll(null, "현대차", pageable, "weekly");
 
-        assertThat(result).hasSize(1)
+        assertThat(response.etfReadResponseList()).hasSize(1)
                 .extracting("etfCode").containsOnly("005380");
+        assertThat(response.totalCount()).isEqualTo(1);
     }
 
     @Test
     @DisplayName("테마별 월간 ETF 검색")
     void testFindMonthlyByTheme() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<EtfReturnDto> result = repository.findEtfsByPeriod(Theme.GOLD, null, pageable, "monthly");
+        EtfResponse response = etfService.readAll(Theme.GOLD, null, pageable, "monthly");
 
-        assertThat(result).hasSize(2)
+        assertThat(response.etfReadResponseList()).hasSize(2)
                 .extracting("etfName")
                 .containsExactlyInAnyOrder("현대차 ETF", "기아차 ETF");
+        assertThat(response.totalCount()).isEqualTo(2);
     }
 }

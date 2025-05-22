@@ -27,20 +27,30 @@ public class EtfRestController {
                                             @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(defaultValue = "weekly") String period) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword, period);
+        EtfResponse etfResponse = etfService.readAll(theme, keyword, pageable, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
+    //페이징 없는 전체 조회용. 주간 수익률 반환.
+    @GetMapping("/etfs/search")
+    public ResponseEntity<EtfAllResponse> readAll(
+            @RequestParam(required = false) Theme theme,
+            @RequestParam(defaultValue = "") String keyword) {
+
+        EtfAllResponse etfAllResponse = etfService.searchAll(theme, keyword);
+
+        return ResponseEntity.status(HttpStatus.OK).body(etfAllResponse);
+    }
 
     @GetMapping("/etfs/{etfId}")
-    public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId){
+    public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId) {
         EtfDetailResponse etfDetailResponse = etfService.findById(etfId);
         return ResponseEntity.status(HttpStatus.OK).body(etfDetailResponse);
     }
 
     @Secured("ROLE_USER")
     @PostMapping("/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId) {
         SubscribeResponse subscribeResponse = etfService.subscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscribeResponse);
     }
@@ -48,8 +58,8 @@ public class EtfRestController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs/subscribes")
     public ResponseEntity<SubscribeListResponse> subscribeReadAll(@AuthenticationPrincipal UserDetails userDetails,
-                                                  @RequestParam(defaultValue = "1") int page,
-                                                  @RequestParam(defaultValue = "20") int size){
+                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(subscribeListResponse);
@@ -57,7 +67,7 @@ public class EtfRestController {
 
     @Secured("ROLE_USER")
     @DeleteMapping("/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId) {
         SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
