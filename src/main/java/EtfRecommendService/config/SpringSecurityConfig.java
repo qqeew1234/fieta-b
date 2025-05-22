@@ -60,7 +60,7 @@ public class SpringSecurityConfig {
                                 // 회원가입은 인증 없이 허용
                                 .requestMatchers(HttpMethod.POST,"/api/v1/admin/login").permitAll()
                                 .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
-                                .requestMatchers("/api/v1/comments/**").authenticated()
+                                .requestMatchers("/api/v1/comments/**").permitAll()
                                 .requestMatchers("/api/v1/etfs/**").permitAll()
                                 .requestMatchers("/api/v1/articles/**").permitAll()
                                 .requestMatchers("/api/v1/notifications/**").permitAll()

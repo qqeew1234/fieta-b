@@ -31,6 +31,7 @@ public class Comment extends BaseEntity {
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "comment")
+    @ToString.Exclude
     @Builder.Default
     private List<CommentLike> commentLikes = new ArrayList<>();
 
@@ -42,14 +43,12 @@ public class Comment extends BaseEntity {
     @ManyToOne
     @ToString.Exclude
     private User user;
-    @OneToMany
-    @ToString.Exclude
-    @Builder.Default
-    private List<CommentLike> commentLikeList = new ArrayList<>();
+
     @OneToMany(mappedBy = "comment")
     @Builder.Default
     @ToString.Exclude
     private List<CommentReport> ReportList = new ArrayList<>();
+
     @OneToMany(mappedBy = "comment")
     @Builder.Default
     @ToString.Exclude

@@ -25,15 +25,14 @@ public class CommentRestController {
     //댓글 생성
     @Secured("ROLE_USER")
     @PostMapping
-    public void createComment(
+    public CommentResponse createComment(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody CommentCreateRequest commentCreateRequest) {
-        commentService.create(userDetails.getUsername(), commentCreateRequest);
+        return commentService.create(userDetails.getUsername(), commentCreateRequest);
     }
 
     //댓글 조회
     //관리자와 유저 접근 가능
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<CommentsPageList> readAllComment(
             @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
@@ -44,7 +43,7 @@ public class CommentRestController {
 
     //댓글 수정
     @Secured("ROLE_USER")
-    @PutMapping("/{commentId}")
+    @PatchMapping("/{commentId}")
     public void updateComment(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long commentId,

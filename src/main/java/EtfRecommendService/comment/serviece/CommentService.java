@@ -53,7 +53,7 @@ public class CommentService {
                         return CommentResponse.builder()
                                 .id(c.comment().getId())
                                 .userId(c.comment().getUser().getId())
-                                .nickname(c.comment().getUser().getNickname())
+                                .nickName(c.comment().getUser().getNickname())
                                 .content(c.comment().getContent())
                                 .likesCount(c.likesCount())
                                 .createdAt(c.comment().getCreatedAt())
@@ -69,13 +69,15 @@ public class CommentService {
                     .commentResponses(commentResponseList)
                     .build();
         } else {
-            Page<Comment> commentPage = commentRepository.findAllByEtfId(etfId, pageable);
+            Page<Comment> commentPage = commentRepository.findAllByEtfIdAndIsDeletedFalse(etfId, pageable);
             List<Comment> commentList = commentPage.getContent();
             List<CommentResponse> commentResponseList = commentList.stream().map(
                             c -> CommentResponse
                                     .builder()
                                     .id(c.getId())
                                     .userId(c.getUser().getId())
+                                    .nickName(c.getUser().getNickname())
+                                    .imageUrl(c.getUser().getImageUrl())
                                     .content(c.getContent())
                                     .createdAt(c.getCreatedAt())
                                     .build()
@@ -94,7 +96,7 @@ public class CommentService {
 
     //Comment Create
     @Transactional
-    public void create(String loginId, CommentCreateRequest commentCreateRequest) {
+    public CommentResponse create(String loginId, CommentCreateRequest commentCreateRequest) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new NoExistsUserIdException("User ID not found"));
         Etf etf = etfRepository.findById(commentCreateRequest.etfId())
@@ -129,6 +131,15 @@ public class CommentService {
         comment.addEtfAndUser(etf, user);
 // 조건 통과 시 저장
         commentRepository.save(comment);
+
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .userId(comment.getUser().getId())
+                .nickName(comment.getUser().getNickname())
+                .content(comment.getContent())
+                .likesCount((long) comment.getCommentLikes().size())
+                .createdAt(comment.getCreatedAt())
+                .build();
     }
 
     //Comment Update
@@ -140,7 +151,7 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("User ID not found"));
 
         // 2) 수정 대상 댓글 로드
-        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment ID not found"));
 
         // 3) 권한 검사: 작성자와 일치해야
@@ -157,8 +168,12 @@ public class CommentService {
     //Comment Soft Delete
     @Transactional
     public void delete(String loginId, Long commentId) {
-        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
+
+        userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(() -> new RuntimeException("User ID not found"));
+
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+
         comment.setDeleted(); // isDeleted = true 로 표시
 
         // sysout 으로 확인
@@ -172,7 +187,7 @@ public class CommentService {
     @Transactional
     public ToggleLikeResponse toggleLike(String loginId, Long commentId) {
         // 댓글 & 유저 조회
-        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -206,7 +221,7 @@ public class CommentService {
     public CommentResponse readOneComment(String loginId, Long commentId) {
         //이부분은 Spring Security 적용해서 권한 검증하는 방식으로 교체할것- 임시 권한 검증책
         Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(()->new EntityNotFoundException("User is not Admin"));
-        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId).orElseThrow(()->new EntityNotFoundException("Not found Comment"));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->new EntityNotFoundException("Not found Comment"));
         return CommentResponse.toDto(comment);
     }
 }

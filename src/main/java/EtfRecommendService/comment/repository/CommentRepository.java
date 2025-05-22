@@ -19,4 +19,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findAllByEtfId(Long etfId, Pageable pageable);
 
     Optional<Comment> findByIdAndIsDeletedFalse(Long commentId);
+
+    Page<Comment> findAllByEtfIdAndIsDeletedFalse(Long etfId, Pageable pageable);
 }

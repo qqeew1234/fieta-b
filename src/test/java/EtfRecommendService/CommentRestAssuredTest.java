@@ -120,7 +120,7 @@ public class CommentRestAssuredTest extends AcceptanceTest {
 
                 .body(new CommentUpdateRequest("이글을 믿고 1000%가 올랐어요"))
                 .when()
-                .put("/api/v1/comments/{commentId}")
+                .patch("/api/v1/comments/{commentId}")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
     }

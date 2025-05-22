@@ -42,7 +42,7 @@ public class CommentRepositoryCustom {
                 .from(qComment)
                 .join(qComment.etf, qEtf)
                 .join(qComment.user, qUser)
-                .leftJoin(qComment.commentLikeList, qCommentLike)
+                .leftJoin(qComment.commentLikes, qCommentLike)
                 .where(qComment.etf.id.eq(etfId).and(qComment.isDeleted.eq(false)))
                 .groupBy(qComment.id);
 
