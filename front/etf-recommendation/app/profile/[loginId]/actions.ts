@@ -14,11 +14,16 @@ export async function updateProfile(
   nickname: string,
   isLikePrivate: boolean
 ) {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
   try {
-    const { data, error } = await updateUserProfile({
-      nickname: nickname,
-      isLikePrivate: isLikePrivate,
-    });
+    const { data, error } = await updateUserProfile(
+      {
+        nickname: nickname,
+        isLikePrivate: isLikePrivate,
+      },
+      accessToken
+    );
 
     if (error || !data) {
       return {

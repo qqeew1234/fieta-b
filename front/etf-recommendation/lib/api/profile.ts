@@ -27,11 +27,12 @@ export interface ImageUploadResponse {
  * 프로필을 업데이트합니다.
  */
 export async function updateUserProfile(
-  userData: ProfileUpdateRequest
+  userData: ProfileUpdateRequest,
+  accessToken: string
 ): Promise<FetchResult<ProfileResponse>> {
   return httpPatch('/api/v1/users', userData, {
     errorMessage: '프로필 업데이트에 실패했습니다',
-    credentials: 'include',
+    authToken: accessToken,
   });
 }
 
