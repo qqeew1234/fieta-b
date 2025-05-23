@@ -2,17 +2,14 @@
 
 import type React from "react"
 import { useState, useEffect, useRef, type KeyboardEvent } from "react"
-import { Search, Clock, ArrowUp, ArrowDown } from "lucide-react"
+import { Search, Clock } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import type { ETF } from "@/components/etf-table-body"
 import { useRouter } from "next/navigation"
 
-// 로컬 스토리지 키
 const RECENT_SEARCHES_KEY = "recent-etf-searches"
-
-// 최대 최근 검색어 수
 const MAX_RECENT_SEARCHES = 5
 
 interface SearchDropdownProps {
@@ -38,35 +35,27 @@ export default function EnhancedSearchDropdown({
     const inputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
 
-    // 최근 검색어 로드
     useEffect(() => {
         if (showRecent) {
             try {
                 const saved = localStorage.getItem(RECENT_SEARCHES_KEY)
                 if (saved) {
-                    const parsed = JSON.parse(saved)
-                    setRecentSearches(parsed)
+                    setRecentSearches(JSON.parse(saved))
                 }
-            } catch (error) {
-                console.error("최근 검색어 로드 실패:", error)
+            } catch {
+                // 무시
             }
         }
     }, [showRecent])
 
-    // 최근 검색어 저장
     const saveToRecentSearches = (item: ETF) => {
         if (!showRecent) return
 
-        try {
-            const updatedRecent = [item, ...recentSearches.filter((i) => i.id !== item.id)].slice(0, MAX_RECENT_SEARCHES)
-            setRecentSearches(updatedRecent)
-            localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updatedRecent))
-        } catch (error) {
-            console.error("최근 검색어 저장 실패:", error)
-        }
+        const updatedRecent = [item, ...recentSearches.filter((i) => i.id !== item.id)].slice(0, MAX_RECENT_SEARCHES)
+        setRecentSearches(updatedRecent)
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updatedRecent))
     }
 
-    // 검색 결과 필터링
     const filteredItems = query.trim()
         ? items.filter(
             (item) =>
@@ -75,82 +64,62 @@ export default function EnhancedSearchDropdown({
         )
         : []
 
-    // 검색어 하이라이트 처리
     const highlightMatch = (text: string) => {
         if (!query.trim()) return text
 
         const regex = new RegExp(`(${query})`, "gi")
         const parts = text.split(regex)
 
-        return parts.map((part, i) => {
-            if (part.toLowerCase() === query.toLowerCase()) {
-                return (
+        return parts.map((part, i) =>
+                part.toLowerCase() === query.toLowerCase() ? (
                     <span key={i} className="bg-amber-700 text-white font-medium">
-            {part}
-          </span>
-                )
-            }
-            return part
-        })
+          {part}
+        </span>
+                ) : (
+                    part
+                ),
+        )
     }
 
-    // 항목 선택 처리
     const handleSelectItem = (item: ETF) => {
         onSelect(item)
         saveToRecentSearches(item)
         setQuery("")
         setIsOpen(false)
         setSelectedIndex(-1)
-
-        // 상세 페이지로 리다이렉트
-        if (redirectToDetail) {
-            router.push(`/etf/${item.id}`)
-        }
+        if (redirectToDetail) router.push(`/etf/${item.id}`)
     }
 
-    // 키보드 네비게이션
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         const items = query.trim() ? filteredItems : recentSearches
 
         if (!isOpen || items.length === 0) return
 
-        // 아래 화살표
         if (e.key === "ArrowDown") {
             e.preventDefault()
             setSelectedIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0))
-        }
-        // 위 화살표
-        else if (e.key === "ArrowUp") {
+        } else if (e.key === "ArrowUp") {
             e.preventDefault()
             setSelectedIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1))
-        }
-        // 엔터
-        else if (e.key === "Enter" && selectedIndex >= 0) {
+        } else if (e.key === "Enter" && selectedIndex >= 0) {
             e.preventDefault()
             handleSelectItem(items[selectedIndex])
-        }
-        // ESC
-        else if (e.key === "Escape") {
+        } else if (e.key === "Escape") {
             e.preventDefault()
             setIsOpen(false)
         }
     }
 
-    // 외부 클릭 감지
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false)
             }
         }
-
         document.addEventListener("mousedown", handleClickOutside)
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
+        return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
-    // 최근 검색어 삭제
     const removeRecentSearch = (e: React.MouseEvent, itemId: string) => {
         e.stopPropagation()
         const updatedRecent = recentSearches.filter((item) => item.id !== itemId)
@@ -161,11 +130,13 @@ export default function EnhancedSearchDropdown({
     return (
         <div className="relative" ref={dropdownRef}>
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <Input
                     ref={inputRef}
                     placeholder={placeholder}
-                    className="pl-10 pr-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus-visible:ring-gray-600"
+                    className="pl-10 pr-10
+            bg-white text-gray-900 border border-gray-300 placeholder:text-gray-400 focus-visible:ring-indigo-500
+            dark:bg-gray-800 dark:text-white dark:border-gray-700 dark:placeholder:text-gray-400 dark:focus-visible:ring-gray-600"
                     value={query}
                     onChange={(e) => {
                         setQuery(e.target.value)
@@ -179,7 +150,9 @@ export default function EnhancedSearchDropdown({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400 hover:text-white hover:bg-gray-700"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6
+              text-gray-400 hover:text-gray-700 hover:bg-gray-100
+              dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"
                         onClick={() => {
                             setQuery("")
                             inputRef.current?.focus()
@@ -205,89 +178,107 @@ export default function EnhancedSearchDropdown({
             </div>
 
             {isOpen && (
-                <div className="absolute z-50 mt-1 w-full bg-gray-800 rounded-md shadow-lg border border-gray-700 max-h-[350px] overflow-y-auto">
+                <div
+                    className="
+            absolute z-50 mt-1 w-full rounded-md shadow-lg max-h-[350px] overflow-y-auto
+            bg-white text-gray-900 border border-gray-300
+            dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                >
                     {/* 검색 결과 */}
-                    {query.trim() && (
-                        <>
-                            {filteredItems.length > 0 ? (
-                                <div className="py-2">
-                                    <div className="px-3 py-1.5 text-xs font-medium text-gray-400">검색 결과</div>
-                                    {filteredItems.map((item, index) => (
-                                        <div
-                                            key={item.id}
-                                            className={`px-3 py-2 cursor-pointer flex justify-between items-center hover:bg-gray-700 ${
-                                                index === selectedIndex ? "bg-gray-700" : ""
-                                            }`}
-                                            onClick={() => handleSelectItem(item)}
-                                        >
-                                            <div>
-                                                <div className="font-medium text-white">{highlightMatch(item.name)}</div>
-                                                <div className="text-sm text-gray-400 flex items-center gap-2">
-                                                    <span>{highlightMatch(item.ticker)}</span>
-                                                    <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
-                                                        {item.theme}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className={`font-medium ${item.change >= 0 ? "text-green-500" : "text-red-500"}`}>
-                                                    {item.change >= 0 ? "+" : ""}
-                                                    {item.change}%
-                                                </div>
-                                                <div className="text-sm text-gray-400">{item.price.toLocaleString()}원</div>
+                    {query.trim() ? (
+                        filteredItems.length > 0 ? (
+                            <div className="py-2">
+                                <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">검색 결과</div>
+                                {filteredItems.map((item, index) => (
+                                    <div
+                                        key={item.id}
+                                        className={`px-3 py-2 cursor-pointer flex justify-between items-center
+                      hover:bg-gray-100 dark:hover:bg-gray-700
+                      ${index === selectedIndex ? "bg-gray-200 dark:bg-gray-700" : ""}`}
+                                        onClick={() => handleSelectItem(item)}
+                                    >
+                                        <div>
+                                            <div className="font-medium">{highlightMatch(item.name)}</div>
+                                            <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                                                <span>{highlightMatch(item.ticker)}</span>
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-xs border-gray-400 text-gray-600 dark:border-gray-600 dark:text-gray-400"
+                                                >
+                                                    {item.theme}
+                                                </Badge>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="px-3 py-4 text-center text-gray-400">검색 결과가 없습니다</div>
-                            )}
-                        </>
-                    )}
-
-                    {/* 최근 검색어 */}
-                    {showRecent && !query.trim() && recentSearches.length > 0 && (
+                                        <div className="text-right">
+                                            {/*
+                                            <div
+                                                className={`font-medium ${
+                                                    item.change >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                                                }`}
+                                            >
+                                                {item.change >= 0 ? "+" : ""}
+                                                {item.change}%
+                                            </div>
+                                            <div className="text-sm text-gray-600 dark:text-gray-400">{item.price.toLocaleString()}원</div>
+                                            */}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">검색 결과가 없습니다</div>
+                        )
+                    ) : showRecent && recentSearches.length > 0 ? (
                         <div className="py-2">
-                            <div className="px-3 py-1.5 text-xs font-medium text-gray-400 flex items-center">
+                            <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
                                 최근 검색
                             </div>
                             {recentSearches.map((item, index) => (
                                 <div
                                     key={item.id}
-                                    className={`px-3 py-2 cursor-pointer flex justify-between items-center hover:bg-gray-700 ${
-                                        index === selectedIndex ? "bg-gray-700" : ""
-                                    }`}
+                                    className={`px-3 py-2 cursor-pointer flex justify-between items-center
+                    hover:bg-gray-100 dark:hover:bg-gray-700
+                    ${index === selectedIndex ? "bg-gray-200 dark:bg-gray-700" : ""}`}
                                     onClick={() => handleSelectItem(item)}
                                 >
                                     <div>
-                                        <div className="font-medium text-white">{item.name}</div>
-                                        <div className="text-sm text-gray-400 flex items-center gap-2">
+                                        <div className="font-medium">{item.name}</div>
+                                        <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
                                             <span>{item.ticker}</span>
-                                            <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+                                            <Badge
+                                                variant="outline"
+                                                className="text-xs border-gray-400 text-gray-600 dark:border-gray-600 dark:text-gray-400"
+                                            >
                                                 {item.theme}
                                             </Badge>
                                         </div>
                                     </div>
                                     <div className="flex items-center">
+                                        {/*
                                         <div className="text-right mr-2">
-                                            <div className={`font-medium ${item.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                                            <div
+                                                className={`font-medium ${
+                                                    item.change >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                                                }`}
+                                            >
                                                 {item.change >= 0 ? "+" : ""}
                                                 {item.change}%
                                             </div>
-                                            <div className="text-sm text-gray-400">{item.price.toLocaleString()}원</div>
+                                            <div className="text-sm text-gray-600 dark:text-gray-400">{item.price.toLocaleString()}원</div>
                                         </div>
+                                        */}
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-6 w-6 opacity-50 hover:opacity-100 text-gray-400 hover:text-white hover:bg-gray-700"
+                                            className="h-6 w-6 opacity-50 hover:opacity-100 text-gray-600 dark:text-gray-400 hover:text-white hover:bg-gray-700"
                                             onClick={(e) => removeRecentSearch(e, item.id)}
                                         >
-                                            <span className="sr-only">삭제</span>
+                                            <span className="sr-only">최근 검색어 삭제</span>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
-                                                width="14"
-                                                height="14"
+                                                width="16"
+                                                height="16"
                                                 viewBox="0 0 24 24"
                                                 fill="none"
                                                 stroke="currentColor"
@@ -303,18 +294,7 @@ export default function EnhancedSearchDropdown({
                                 </div>
                             ))}
                         </div>
-                    )}
-
-                    {/* 키보드 네비게이션 도움말 */}
-                    {(filteredItems.length > 0 || (showRecent && recentSearches.length > 0)) && (
-                        <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500 flex items-center justify-center gap-3">
-                            <div className="flex items-center">
-                                <ArrowUp className="h-3 w-3 mr-1" /> <ArrowDown className="h-3 w-3 mr-1" /> 이동
-                            </div>
-                            <div>Enter 선택</div>
-                            <div>Esc 닫기</div>
-                        </div>
-                    )}
+                    ) : null}
                 </div>
             )}
         </div>

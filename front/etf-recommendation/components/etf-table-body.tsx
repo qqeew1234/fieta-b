@@ -65,41 +65,48 @@ export function EtfTableBody({ etfs, onPriceUpdate }: Props) {
   }, [etfCodes]);
 
   return (
-    <>
-      {etfs.map((etf, index) => (
-        <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-          <TableCell className="font-medium">{index + 1}</TableCell>
-          <TableCell>
-            <Link
-              href={`/etf/${etf.id}`}
-              className="hover:underline text-blue-600"
+      <>
+        {etfs.map((etf, index) => (
+            <TableRow
+                key={etf.id}
+                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700"
             >
-              {etf.name}
-            </Link>
-          </TableCell>
-          <TableCell>{etf.ticker}</TableCell>
-          <TableCell>
-            <Badge variant="outline">{etf.theme}</Badge>
-          </TableCell>
-          <TableCell className="text-right">
-            {etf.price.toLocaleString()}원
-          </TableCell>
-          <TableCell
-            className={`text-right ${
-              etf.change >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}
-          >
-            {etf.change >= 0 ? '+' : ''}
-            {etf.change.toFixed(2)}%
-          </TableCell>
-          <TableCell className="text-right">
-            {etf.volume.toLocaleString()}
-          </TableCell>
-          <TableCell className="text-right font-bold text-green-600">
-            +{etf.returnRate.toFixed(2)}%
-          </TableCell>
-        </TableRow>
-      ))}
-    </>
+              <TableCell className="font-medium text-slate-900 dark:text-slate-200">
+                {index + 1}
+              </TableCell>
+              <TableCell>
+                <Link
+                    href={`/etf/${etf.id}`}
+                    className="hover:underline text-blue-600 dark:text-blue-400"
+                >
+                  {etf.name}
+                </Link>
+              </TableCell>
+              <TableCell className="text-slate-900 dark:text-slate-300">
+                {etf.ticker}
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{etf.theme}</Badge>
+              </TableCell>
+              <TableCell className="text-right text-slate-900 dark:text-slate-300">
+                {etf.price.toLocaleString()}원
+              </TableCell>
+              <TableCell
+                  className={`text-right ${
+                      etf.change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                  }`}
+              >
+                {etf.change >= 0 ? '+' : ''}
+                {etf.change.toFixed(2)}%
+              </TableCell>
+              <TableCell className="text-right text-slate-900 dark:text-slate-300">
+                {etf.volume.toLocaleString()}
+              </TableCell>
+              <TableCell className="text-right font-bold text-green-600 dark:text-green-400">
+                +{etf.returnRate.toFixed(2)}%
+              </TableCell>
+            </TableRow>
+        ))}
+      </>
   );
 }

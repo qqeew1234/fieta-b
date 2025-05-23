@@ -30,7 +30,7 @@ export function EtfRankingTable({
     <div className="mb-8">
       <Tabs defaultValue="all">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">ETF 수익 랭킹</h2>
+          <h2 className="text-2xl font-bold"></h2>
         </div>
 
         <TabsContent value="all">
