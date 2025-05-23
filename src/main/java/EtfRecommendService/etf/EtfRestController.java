@@ -1,9 +1,18 @@
 package EtfRecommendService.etf;
 
-import EtfRecommendService.etf.dto.*;
+import EtfRecommendService.etf.dto.EtfAllResponse;
+import EtfRecommendService.etf.dto.EtfDetailResponse;
+import EtfRecommendService.etf.dto.EtfReadResponse;
+import EtfRecommendService.etf.dto.EtfResponse;
+import EtfRecommendService.etf.dto.SubscribeDeleteResponse;
+import EtfRecommendService.etf.dto.SubscribeListResponse;
+import EtfRecommendService.etf.dto.SubscribeResponse;
+import EtfRecommendService.etf.dto.WatchPriceRequest;
+import EtfRecommendService.etf.dto.WatchResponse;
 import EtfRecommendService.webSocket.CsvLoader;
 import EtfRecommendService.webSocket.WebSocketConnectionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -12,10 +21,21 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1")
@@ -24,7 +44,7 @@ public class EtfRestController {
     private final EtfService etfService;
     private final WebSocketConnectionService webSocketConnectionService;
     private final CsvLoader csvLoader;
-
+    private final EtfWatchService watchService;
 
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
@@ -79,7 +99,7 @@ public class EtfRestController {
     }
 
     @GetMapping("/etfs/recommend")
-    public ResponseEntity<EtfReadResponse> readTopByThemeOrderByWeeklyReturn(@RequestParam String theme){
+    public ResponseEntity<EtfReadResponse> readTopByThemeOrderByWeeklyReturn(@RequestParam String theme) {
         return ResponseEntity.ok(etfService.findTopByThemeOrderByWeeklyReturn(Theme.fromDisplayName(theme)));
     }
     //웹소켓
@@ -102,5 +122,16 @@ public class EtfRestController {
     public ResponseEntity<Void> subscribeStocks(@RequestBody List<String> stockCodes) {
         webSocketConnectionService.subscribeNewKeys(stockCodes);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/etfs/realtime-prices")
+    public WatchResponse registerRealTimePriceSubscription(@RequestBody WatchPriceRequest request) {
+        return watchService.watch(request);
+    }
+
+    @DeleteMapping("/etfs/realtime-prices/{watchId}")
+    public List<String> unregisterRealTimePriceSubscription(@PathVariable String watchId) {
+        log.debug("구독 해지 요청 watchId: {}", watchId);
+        return watchService.unwatch(UUID.fromString(watchId));
     }
 }

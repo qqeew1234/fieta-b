@@ -19,3 +19,13 @@ services:
       - "max_connections=100"
       - "-c"
       - "client_encoding=UTF8"
+
+  redis:
+    image: redis:7-alpine
+    container_name: etf-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - ./db/redis/data:/data
