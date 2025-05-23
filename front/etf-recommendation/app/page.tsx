@@ -1,16 +1,46 @@
-"use client"
-import { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Filter } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import EtfCard, { type ETF } from "@/components/EtfCard"
-import MarketTickerWidget from "@/components/MarketTickerWidget"
-import { fetchEtfs } from "@/lib/api/etf"
-import EnhancedSearchDropdown from "@/components/enhanced-search-dropdown"
+'use client';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Search,
+  TrendingUp,
+  BarChart3,
+  ArrowUpRight,
+  ArrowDownRight,
+  Filter,
+} from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import EtfCard, { ETF } from '@/components/EtfCard';
+import MarketTickerWidget from '@/components/MarketTickerWidget';
+import { fetchAllEtfs, fetchEtfsPage } from '@/lib/api/etf';
+import Pagination from '@/components/StockPagination';
+import StocksTable from '@/components/StocksTable';
 
 // 시장 요약 데이터
 const marketSummary = {
@@ -47,6 +77,11 @@ export default function Home() {
   const [allEtfData, setAllEtfData] = useState<ETF[]>([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+
+  //웹소켓
+  //서버에서 총 종목 수 받기
+  const [websocketPage, setWebsocketPage] = useState(0);
+  const size = 10; // 한 페이지당 10개
 
   //전체 데이터 (allEtfData) 최초 로딩
   useEffect(() => {
@@ -425,25 +460,41 @@ export default function Home() {
           </Tabs>
         </div>
 
-        {/* 추천 섹션 */}
-        <div className="mb-8">
-          <div className="bg-slate-50 rounded-xl p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2">나만의 맞춤 ETF 추천</h2>
-              <p className="text-slate-500 max-w-2xl mx-auto">
-                투자 성향과 목표에 맞는 ETF를 추천받아 더 효율적인 투자를 시작하세요. 회원가입 후 무료로 이용 가능합니다.
-              </p>
-            </div>
-            <div className="flex justify-center gap-4">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                <Link href="/recommendations">맞춤 ETF 추천받기</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="bg-white text-slate-900 border-slate-300 hover:bg-slate-100">
-                <Link href="/register">무료 회원가입</Link>
-              </Button>
-            </div>
+      {/* 추천 섹션 */}
+      <div className="mb-8">
+        <div className="bg-slate-50 rounded-xl p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold mb-2">나만의 맞춤 ETF 추천</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto">
+              투자 성향과 목표에 맞는 ETF를 추천받아 더 효율적인 투자를
+              시작하세요. 회원가입 후 무료로 이용 가능합니다.
+            </p>
           </div>
+          <div className="flex justify-center gap-4">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700">
+              <Link href="/recommendations">맞춤 ETF 추천받기</Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="bg-white text-slate-900 border-slate-300 hover:bg-slate-100"
+            >
+              <Link href="/register">무료 회원가입</Link>
+              {/*{filteredEtfs.map((etf) => (*/}
+              {/*    <EtfCard key={etf.id} etf={etf} />*/}
+              {/*))}*/}
+            </Button>
+          </div>
+
+          <section className="mt-12">
+            <h1>ETF 실시간 시세</h1>
+            {/* 페이지네이션 버튼 */}
+            <Pagination size={size} onPageChange={setWebsocketPage} />
+            {/* 실시간 시세 테이블 */}
+            <StocksTable page={websocketPage} size={size} />
+          </section>
         </div>
       </div>
-  )
+    </div>
+  );
 }

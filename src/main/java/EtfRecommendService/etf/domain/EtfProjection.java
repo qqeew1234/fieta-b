@@ -3,10 +3,7 @@ package EtfRecommendService.etf.domain;
 import EtfRecommendService.etf.Theme;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -33,4 +30,13 @@ public class EtfProjection {
     private double monthlyReturn;
 
     private LocalDate date;
+
+    @Builder
+    public EtfProjection(String etfName, String etfCode, Theme theme, double weeklyReturn, double monthlyReturn) {
+        this.etfName = etfName;
+        this.etfCode = etfCode;
+        this.theme = theme;
+        this.weeklyReturn = weeklyReturn;
+        this.monthlyReturn = monthlyReturn;
+    }
 }

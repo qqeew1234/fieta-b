@@ -63,6 +63,7 @@ public class EtfQueryRepository {
                         keywordContains(keyword))
                 .fetchOne();
 
+        //null 체크, 조회된거 없으면 0L로 처리
         return count == null ? 0L : count;
     }
 

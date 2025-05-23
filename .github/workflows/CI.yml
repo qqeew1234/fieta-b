@@ -13,6 +13,8 @@
     JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
     SPRING_PROFILES_ACTIVE: test
     GOOGLE_APPLICATION_CREDENTIALS: $HOME/gcp-key.json
+    KIS_APPKEY: ${{secrets.KIS_APPKEY}}
+    KIS_SECRETKEY: ${{secrets.KIS_SECRETKEY}}
 
   jobs:
     test:
