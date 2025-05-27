@@ -1,2 +1,3 @@
 FIETA
-https://sdmntprcentralus.oaiusercontent.com/files/00000000-d3bc-61f5-a123-eead55610b18/raw?se=2025-05-27T14%3A21%3A58Z&sp=r&sv=2024-08-04&sr=b&scid=9e303086-03a0-55ad-918c-966fb09ed092&skoid=9ccea605-1409-4478-82eb-9c83b25dc1b0&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-05-27T10%3A27%3A43Z&ske=2025-05-28T10%3A27%3A43Z&sks=b&skv=2024-08-04&sig=JYz9vo/hHUxO3NY%2BGbMuBBU/nA2OcbUV1daLhzRvjvc%3D
+
+![귀여운 금화를 물고 있는 신화 속 생물](https://github.com/user-attachments/assets/f5aecdf2-f30b-4d82-982c-1bdaf9dc465f)
