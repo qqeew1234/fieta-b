@@ -1,3 +1,3 @@
-FIETA
+FIETA B
 
-![귀여운 금화를 물고 있는 신화 속 생물](https://github.com/user-attachments/assets/f5aecdf2-f30b-4d82-982c-1bdaf9dc465f)
+![귀여운 금화를 물고 있는 신화 속 생물.png](../../Downloads/%EA%B7%80%EC%97%AC%EC%9A%B4%20%EA%B8%88%ED%99%94%EB%A5%BC%20%EB%AC%BC%EA%B3%A0%20%EC%9E%88%EB%8A%94%20%EC%8B%A0%ED%99%94%20%EC%86%8D%20%EC%83%9D%EB%AC%BC.png)
